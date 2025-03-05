@@ -1,44 +1,34 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
+using UnityEngine.SceneManagement;
+using TMPro;  // Χρειάζεται για το TextMeshPro
 
-public class loadingScreen : MonoBehaviour
+public class LoadingScreen : MonoBehaviour
 {
-    public Slider LoadingBar;
-    public TextMeshProUGUI ProgressText;
+    public Slider progressBar;
+    public TMP_Text progressText;  // Χρήση TextMeshPro
 
-    public void LoadScene(int sceneIndex)
+    void Start()
     {
-        StartCoroutine(LoadAsynchronously(sceneIndex));
+        StartCoroutine(LoadSceneAsync(1)); // Το Scene Index 1 είναι η επόμενη σκηνή
     }
 
-    IEnumerator LoadAsynchronously(int sceneIndex)
+    IEnumerator LoadSceneAsync(int sceneIndex)
     {
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneIndex);
-
-        // Δεν επιτρέπει στην σκηνή να ενεργοποιηθεί αυτόματα μέχρι να είναι έτοιμο το UI
-        operation.allowSceneActivation = false;
+        operation.allowSceneActivation = false; // Μην αλλάξει σκηνή μέχρι να ολοκληρωθεί το loading
 
         while (!operation.isDone)
         {
-            // Η πρόοδος της φόρτωσης κυμαίνεται από 0.0 έως 0.9, οπότε τη μετατρέπουμε για να φτάσει το 100%
-            float progress = Mathf.Clamp01(operation.progress / 0.9f); 
+            float progress = Mathf.Clamp01(operation.progress / 0.9f); // Κανονικοποίηση στο 100%
+            progressBar.value = progress;
+            progressText.text = $"{progress * 100:F0}%"; // Ποσοστό χωρίς δεκαδικά
 
-            // Ενημέρωση του slider με την πρόοδο φόρτωσης
-            LoadingBar.value = progress;
-
-            // Υπολογισμός του ποσοστού
-            float progressPercentage = progress * 100;
-
-            // Ενημέρωση του κειμένου με το ποσοστό
-            ProgressText.text = Mathf.RoundToInt(progressPercentage) + "%";
-
-            // Όταν η φόρτωση είναι σχεδόν ολοκληρωμένη (0.9), ενεργοποιούμε τη σκηνή
-            if (operation.progress >= 0.9f)
+            if (progress >= 1f)
             {
-                operation.allowSceneActivation = true;
+                yield return new WaitForSeconds(0.5f); // Μικρή καθυστέρηση για smooth effect
+                operation.allowSceneActivation = true; // Μετάβαση στην επόμενη σκηνή
             }
 
             yield return null;

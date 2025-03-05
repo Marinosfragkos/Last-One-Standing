@@ -225,8 +225,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -770, y: -440}
-  m_SizeDelta: {x: 50, y: 46}
+  m_AnchoredPosition: {x: -728.3119, y: -440}
+  m_SizeDelta: {x: 133.3762, y: 46}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &599821977
 MonoBehaviour:
@@ -882,6 +882,7 @@ GameObject:
   - component: {fileID: 1741971850}
   - component: {fileID: 1741971849}
   - component: {fileID: 1741971853}
+  - component: {fileID: 1741971854}
   m_Layer: 5
   m_Name: LoadingScene
   m_TagString: Untagged
@@ -987,8 +988,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a75e6e85853e94a289043af4b748f237, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LoadingBar: {fileID: 1341450904}
-  ProgressText: {fileID: 599821977}
+--- !u!114 &1741971854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741971848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3d9c670f20a64b999f3143c8728bc11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  progressBar: {fileID: 1341450904}
+  progressText: {fileID: 599821977}
 --- !u!1 &1744088763
 GameObject:
   m_ObjectHideFlags: 0
