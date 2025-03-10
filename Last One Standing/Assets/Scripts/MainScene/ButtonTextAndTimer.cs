@@ -11,7 +11,7 @@ public class ButtonTextAndTimer : MonoBehaviour
     private float timer = 0f; // Χρονόμετρο
     private bool isCounting = false; // Αν μετράει τα δευτερόλεπτα
     public float startFontSize = 70f; // Μέγεθος γραμματοσειράς για το "Start"
-    public float matchmakingFontSize = 30f; // Μέγεθος γραμματοσειράς για το "Matchmaking"
+    public float matchmakingFontSize = 25f; // Μέγεθος γραμματοσειράς για το "Matchmaking"
     public Color startColor = new Color(0.752941f, 0.258823f, 0.1176471f,1); // Χρώμα C0421E
 
     
