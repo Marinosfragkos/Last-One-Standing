@@ -2,27 +2,29 @@ using UnityEngine;
 
 public class MouseLockToggle : MonoBehaviour
 {
-    private bool isLocked = true;
+    private bool isLocked = false;
 
     void Start()
     {
-        LockCursor();
+        UnlockCursor();
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isLocked)
-                UnlockCursor();
-            else
-                LockCursor();
+            UnlockCursor();
+        }
+
+        if (Input.GetMouseButtonDown(0) && !isLocked)
+        {
+            LockCursor();
         }
     }
 
     void LockCursor()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = CursorLockMode.Locked; // Κρύβει τελείως τον κέρσορα και τον κλειδώνει
         Cursor.visible = false;
         isLocked = true;
     }

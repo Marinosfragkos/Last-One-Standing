@@ -19,4 +19,3 @@ public class CamFollow : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
     }
 }
-

@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
 {
     // Περιστροφή με το ποντίκι (μόνο στον Y άξονα - περιστρέφει τον παίκτη)
-    float mouseX = Input.GetAxis("Mouse X") * 3f; // ρυθμιζόμενο sensitivity
+    float mouseX = Input.GetAxis("Mouse X") * 20f; // ρυθμιζόμενο sensitivity
     transform.Rotate(0f, mouseX, 0f);
 
     // Κίνηση
