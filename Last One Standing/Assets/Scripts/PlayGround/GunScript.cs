@@ -15,7 +15,7 @@ public class GunScript : MonoBehaviour
     public float fireRate = 0.2f;
     private float nextTimeToFire = 0f;
 
-    public float range = 1000f;
+    public float range = 10000f;
     public float damage = 10f;
 
     public Camera fpsCam;
@@ -48,6 +48,24 @@ public class GunScript : MonoBehaviour
     {
         if (isReloading)
             return; // Απαγορεύουμε πυροβολισμό κατά το reload
+
+
+
+//damage to me///////////
+            if (Input.GetKeyDown(KeyCode.V))
+    {
+        TargetHealth targetHealth = GetComponent<TargetHealth>();
+        if (targetHealth != null)
+        {
+            targetHealth.TakeDamage(10f);
+            Debug.Log("Self damage 10 applied.");
+        }
+    }
+////////////////////////////
+
+
+
+
 
         bool canShoot = Input.GetButton("Fire1") && Time.time >= nextTimeToFire && currentAmmo > 0;
 
