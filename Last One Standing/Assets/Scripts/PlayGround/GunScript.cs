@@ -23,12 +23,14 @@ public class GunScript : MonoBehaviour
     public GameObject hitEffectPrefab;
 
     public TMP_Text ammoText;
-    public TMP_Text reloadingText; // UI text για Reloading
+    public TMP_Text reloadingText;
 
     private Coroutine fadeCoroutine;
     private bool isShootingSoundPlaying = false;
-    private bool isReloading = false; // για να μπλοκάρουμε το shooting κατά το reload
+    private bool isReloading = false;
     private float defaultVolume;
+
+    private TargetHealth health; // NEW
 
     void Start()
     {
@@ -36,36 +38,33 @@ public class GunScript : MonoBehaviour
         UpdateAmmoUI();
 
         if (audioSource != null)
-        {
             defaultVolume = audioSource.volume;
-        }
 
         if (reloadingText != null)
-            reloadingText.gameObject.SetActive(false); // κρύβουμε το reloading UI στην αρχή
+            reloadingText.gameObject.SetActive(false);
+
+        // Προσπαθούμε να βρούμε το TargetHealth του παίκτη
+        health = GetComponentInParent<TargetHealth>(); // NEW
     }
 
     void Update()
     {
+        // NEW: Μπλοκάρουμε τα πάντα αν ο παίκτης είναι σε crawl
+        if ((health != null && health.currentHealth <= 0f) || (health != null && IsPlayerDown()))
+            return;
+
         if (isReloading)
-            return; // Απαγορεύουμε πυροβολισμό κατά το reload
+            return;
 
-
-
-//damage to me///////////
-            if (Input.GetKeyDown(KeyCode.V))
-    {
-        TargetHealth targetHealth = GetComponent<TargetHealth>();
-        if (targetHealth != null)
+        // Self-damage για debug
+        if (Input.GetKeyDown(KeyCode.V))
         {
-            targetHealth.TakeDamage(10f);
-            Debug.Log("Self damage 10 applied.");
+            if (health != null)
+            {
+                health.TakeDamage(10f);
+                Debug.Log("Self damage 10 applied.");
+            }
         }
-    }
-////////////////////////////
-
-
-
-
 
         bool canShoot = Input.GetButton("Fire1") && Time.time >= nextTimeToFire && currentAmmo > 0;
 
@@ -134,24 +133,19 @@ public class GunScript : MonoBehaviour
     {
         isReloading = true;
 
-        // Σταμάτα τον ήχο πυροβολισμού με fade
         if (isShootingSoundPlaying)
         {
             if (fadeCoroutine != null)
                 StopCoroutine(fadeCoroutine);
 
             fadeCoroutine = StartCoroutine(FadeOutShootingSound());
-            if (audioSource != null && reloadSound != null)
+        }
+
+        if (audioSource != null && reloadSound != null)
         {
             audioSource.PlayOneShot(reloadSound);
         }
-        }
-        // Παίξε τον ήχο reload (χωρίς loop)
-         if (audioSource != null && reloadSound != null)
-        {
-            audioSource.PlayOneShot(reloadSound);
-        }
-        // Εμφάνισε το UI Reloading με αντίστροφη μέτρηση 2 δευτερολέπτων
+
         if (reloadingText != null)
         {
             reloadingText.gameObject.SetActive(true);
@@ -166,18 +160,15 @@ public class GunScript : MonoBehaviour
         }
         else
         {
-            // Αν δεν έχεις UI, απλά περίμενε 2 δευτερόλεπτα
             yield return new WaitForSeconds(2f);
         }
 
-        // Γέμισε το όπλο
         int bulletsNeeded = maxAmmo - currentAmmo;
         int bulletsToReload = Mathf.Min(bulletsNeeded, reserveAmmo);
         currentAmmo += bulletsToReload;
         reserveAmmo -= bulletsToReload;
 
         UpdateAmmoUI();
-       
         isReloading = false;
     }
 
@@ -204,11 +195,17 @@ public class GunScript : MonoBehaviour
         audioSource.Stop();
         audioSource.volume = defaultVolume;
     }
-    public void ResetAmmo()
-{
-    currentAmmo = maxAmmo;
-    reserveAmmo = 90; // Ή ό,τι αρχική τιμή έχεις
-    UpdateAmmoUI();
-}
 
+    public void ResetAmmo()
+    {
+        currentAmmo = maxAmmo;
+        reserveAmmo = 90;
+        UpdateAmmoUI();
+    }
+
+    // Helper για την κατάσταση crawl
+    private bool IsPlayerDown()
+    {
+        return health != null && health.GetType().GetField("isDown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(health) is bool b && b;
+    }
 }

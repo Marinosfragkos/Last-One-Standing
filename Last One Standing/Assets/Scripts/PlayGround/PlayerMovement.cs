@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
-using UnityEngine.UI; // ✅ Για Image
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -24,10 +24,10 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 originalCenter;
 
     private bool isReviving = false;
+    private bool isFinalDead = false;  // ΝΕΟ: κατάσταση FinalDeath
 
     public TMP_Text deathCountdownText;
 
-    // ✅ ΝΕΟ: Εικόνα που εμφανίζεται κατά τη διάρκεια του FinalDeath
     public Image downedImage;
 
     void Start()
@@ -57,13 +57,25 @@ public class PlayerMovement : MonoBehaviour
         if (deathCountdownText != null)
             deathCountdownText.gameObject.SetActive(false);
 
-        // ✅ Απόκρυψη εικόνας στην αρχή
         if (downedImage != null)
             downedImage.gameObject.SetActive(false);
     }
 
     void Update()
     {
+        // ΑΠΟΚΛΕΙΣΜΟΣ ΚΙΝΗΣΗΣ ΚΑΙ ΠΕΡΙΣΤΡΟΦΗΣ ΣΕ FINAL DEATH
+        if (isFinalDead)
+        {
+            if (footstepSource != null && footstepSource.isPlaying)
+                footstepSource.Stop();
+            if (crawlAudioSource != null && crawlAudioSource.isPlaying)
+                crawlAudioSource.Stop();
+
+            // Επιστρέφουμε, δεν επιτρέπουμε κίνηση ή περιστροφή
+            return;
+        }
+
+        // Περιστροφή ποντικιού
         float mouseX = Input.GetAxis("Mouse X") * 20f;
         transform.Rotate(0f, mouseX, 0f);
 
@@ -74,23 +86,27 @@ public class PlayerMovement : MonoBehaviour
             Vector3 move = Vector3.zero;
             bool isMoving = false;
 
-            if (Input.GetKey(KeyCode.W))
-            {
-                move += transform.forward;
-                isMoving = true;
-            }
-            else if (Input.GetKey(KeyCode.S))
-            {
-                move -= transform.forward;
-                isMoving = true;
-            }
-
-            ResetAllTriggers();
-            animator.SetTrigger("Crawl");
+           if (Input.GetKey(KeyCode.W)) {
+    ResetAllTriggers();
+    animator.SetTrigger("Crawl");
+    move += transform.forward;
+    isMoving = true;
+}
+else if (Input.GetKey(KeyCode.S)) {
+    ResetAllTriggers();
+    animator.SetTrigger("Crawl");
+    move -= transform.forward;
+    isMoving = true;
+}
+else {
+    ResetAllTriggers();
+    animator.SetTrigger("CrawlIdle");
+}
 
             if (Input.GetKeyDown(KeyCode.V) && !isReviving)
             {
-                Debug.Log("Trigger FinalDeath");
+                // ΞΕΚΙΝΑΕΙ FINAL DEATH
+                isFinalDead = true;
 
                 controller.height = originalHeight;
                 controller.center = originalCenter;
@@ -124,7 +140,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // Κανονική κίνηση...
+        // Κίνηση κανονική
         Vector3 moveNormal = Vector3.zero;
         float currentSpeed = moveSpeed;
         string trigger = "";
@@ -189,6 +205,7 @@ public class PlayerMovement : MonoBehaviour
         animator.ResetTrigger("Backward");
         animator.ResetTrigger("Left");
         animator.ResetTrigger("Right");
+        animator.ResetTrigger("CrawlIdle");
         animator.ResetTrigger("Crawl");
         animator.ResetTrigger("FinalDeath");
     }
@@ -207,7 +224,6 @@ public class PlayerMovement : MonoBehaviour
         if (deathCountdownText != null)
             deathCountdownText.gameObject.SetActive(true);
 
-        // ✅ Εμφάνιση εικόνας "Downed"
         if (downedImage != null)
             downedImage.gameObject.SetActive(true);
 
@@ -224,11 +240,13 @@ public class PlayerMovement : MonoBehaviour
         if (deathCountdownText != null)
             deathCountdownText.gameObject.SetActive(false);
 
-        // ✅ Απόκρυψη εικόνας "Downed"
         if (downedImage != null)
             downedImage.gameObject.SetActive(false);
 
         animator.speed = 1f;
+
+        // Τέλος FinalDeath - επιτρέπουμε πάλι κίνηση/περιστροφή
+        isFinalDead = false;
 
         health.Revive(true);
 
