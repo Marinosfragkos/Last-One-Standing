@@ -141,13 +141,21 @@ public class GunScript : MonoBehaviour
                 StopCoroutine(fadeCoroutine);
 
             fadeCoroutine = StartCoroutine(FadeOutShootingSound());
+            if (audioSource != null && reloadSound != null)
+        {
+            audioSource.PlayOneShot(reloadSound);
         }
-
+        }
+        // Παίξε τον ήχο reload (χωρίς loop)
+         if (audioSource != null && reloadSound != null)
+        {
+            audioSource.PlayOneShot(reloadSound);
+        }
         // Εμφάνισε το UI Reloading με αντίστροφη μέτρηση 2 δευτερολέπτων
         if (reloadingText != null)
         {
             reloadingText.gameObject.SetActive(true);
-            float reloadTime = 2f;
+            float reloadTime = 1f;
             while (reloadTime > 0f)
             {
                 reloadingText.text = $"Reloading... {reloadTime:F1}s";
@@ -169,13 +177,7 @@ public class GunScript : MonoBehaviour
         reserveAmmo -= bulletsToReload;
 
         UpdateAmmoUI();
-
-        // Παίξε τον ήχο reload (χωρίς loop)
-        if (audioSource != null && reloadSound != null)
-        {
-            audioSource.PlayOneShot(reloadSound);
-        }
-
+       
         isReloading = false;
     }
 
@@ -202,4 +204,11 @@ public class GunScript : MonoBehaviour
         audioSource.Stop();
         audioSource.volume = defaultVolume;
     }
+    public void ResetAmmo()
+{
+    currentAmmo = maxAmmo;
+    reserveAmmo = 90; // Ή ό,τι αρχική τιμή έχεις
+    UpdateAmmoUI();
+}
+
 }
