@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 3f;
-
+    
     private CharacterController controller;
     private Animator animator;
     private TargetHealth health;
@@ -87,21 +87,21 @@ public class PlayerMovement : MonoBehaviour
             bool isMoving = false;
 
            if (Input.GetKey(KeyCode.W)) {
-    ResetAllTriggers();
-    animator.SetTrigger("Crawl");
-    move += transform.forward;
-    isMoving = true;
-}
-else if (Input.GetKey(KeyCode.S)) {
-    ResetAllTriggers();
-    animator.SetTrigger("Crawl");
-    move -= transform.forward;
-    isMoving = true;
-}
-else {
-    ResetAllTriggers();
-    animator.SetTrigger("CrawlIdle");
-}
+                ResetAllTriggers();
+                move += transform.forward;
+                animator.SetTrigger("Crawl");
+                isMoving = true;
+            }
+            else if (Input.GetKey(KeyCode.S)) {
+                ResetAllTriggers();
+                move -= transform.forward;
+                animator.SetTrigger("Crawl");
+                isMoving = true;
+            }
+            else {
+                ResetAllTriggers();
+                animator.SetTrigger("CrawlIdle");
+            }
 
             if (Input.GetKeyDown(KeyCode.V) && !isReviving)
             {
@@ -127,10 +127,21 @@ else {
             if (crawlAudioSource != null)
             {
                 if (isMoving && !crawlAudioSource.isPlaying)
+                {
                     crawlAudioSource.Play();
+
+                    // Διακοπή κίνησης και μετάβαση σε CrawlIdle
+                    move = Vector3.zero;
+                    ResetAllTriggers();
+                    animator.SetTrigger("CrawlIdle");
+                    isMoving = false;
+                }
                 else if (!isMoving && crawlAudioSource.isPlaying)
+                {
                     crawlAudioSource.Stop();
+                }
             }
+
 
             if (footstepSource != null && footstepSource.isPlaying)
                 footstepSource.Stop();
