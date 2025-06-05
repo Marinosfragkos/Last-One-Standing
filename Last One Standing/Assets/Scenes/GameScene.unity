@@ -6567,7 +6567,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b200f90b5884d4e8c8208d2c846e7c38, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7448,7 +7448,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b200f90b5884d4e8c8208d2c846e7c38, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8030,13 +8030,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ca45b6c07b364182943217472805f88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubesToChange:
-  - {fileID: 1815156941}
-  - {fileID: 870618134}
-  - {fileID: 967318787}
-  - {fileID: 846847850}
-  newMaterial: {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
-  originalMaterial: {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
+  cubesToChange: []
+  newMaterial: {fileID: 0}
+  originalMaterial: {fileID: 0}
   progressText: {fileID: 637232400}
   baseNameText: {fileID: 0}
   baseName: C
@@ -9683,7 +9679,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b200f90b5884d4e8c8208d2c846e7c38, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14262,7 +14258,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14565,7 +14561,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15357,7 +15353,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -17148,13 +17144,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ca45b6c07b364182943217472805f88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubesToChange:
-  - {fileID: 1910497365}
-  - {fileID: 388428435}
-  - {fileID: 120921628}
-  - {fileID: 171733440}
-  newMaterial: {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
-  originalMaterial: {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
+  cubesToChange: []
+  newMaterial: {fileID: 0}
+  originalMaterial: {fileID: 0}
   progressText: {fileID: 637232400}
   baseNameText: {fileID: 0}
   baseName: C
@@ -22284,7 +22276,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -23827,7 +23819,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b200f90b5884d4e8c8208d2c846e7c38, type: 2}
+  - {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
