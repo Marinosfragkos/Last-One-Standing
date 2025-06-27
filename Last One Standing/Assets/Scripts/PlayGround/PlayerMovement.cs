@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 3f;
-    
+
     private CharacterController controller;
     private Animator animator;
     private TargetHealth health;
@@ -24,10 +24,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 originalCenter;
 
     private bool isReviving = false;
-    private bool isFinalDead = false;  // ΝΕΟ: κατάσταση FinalDeath
+    private bool isFinalDead = false;
 
     public TMP_Text deathCountdownText;
-
     public Image downedImage;
 
     void Start()
@@ -63,7 +62,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // ΑΠΟΚΛΕΙΣΜΟΣ ΚΙΝΗΣΗΣ ΚΑΙ ΠΕΡΙΣΤΡΟΦΗΣ ΣΕ FINAL DEATH
         if (isFinalDead)
         {
             if (footstepSource != null && footstepSource.isPlaying)
@@ -71,11 +69,9 @@ public class PlayerMovement : MonoBehaviour
             if (crawlAudioSource != null && crawlAudioSource.isPlaying)
                 crawlAudioSource.Stop();
 
-            // Επιστρέφουμε, δεν επιτρέπουμε κίνηση ή περιστροφή
             return;
         }
 
-        // Περιστροφή ποντικιού
         float mouseX = Input.GetAxis("Mouse X") * 20f;
         transform.Rotate(0f, mouseX, 0f);
 
@@ -86,7 +82,7 @@ public class PlayerMovement : MonoBehaviour
             Vector3 move = Vector3.zero;
             bool isMoving = false;
 
-           if (Input.GetKey(KeyCode.W)) {
+            if (Input.GetKey(KeyCode.W)) {
                 ResetAllTriggers();
                 move += transform.forward;
                 animator.SetTrigger("Crawl");
@@ -105,7 +101,6 @@ public class PlayerMovement : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.V) && !isReviving)
             {
-                // ΞΕΚΙΝΑΕΙ FINAL DEATH
                 isFinalDead = true;
 
                 controller.height = originalHeight;
@@ -129,8 +124,6 @@ public class PlayerMovement : MonoBehaviour
                 if (isMoving && !crawlAudioSource.isPlaying)
                 {
                     crawlAudioSource.Play();
-
-                    // Διακοπή κίνησης και μετάβαση σε CrawlIdle
                     move = Vector3.zero;
                     ResetAllTriggers();
                     animator.SetTrigger("CrawlIdle");
@@ -142,7 +135,6 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
-
             if (footstepSource != null && footstepSource.isPlaying)
                 footstepSource.Stop();
 
@@ -151,7 +143,6 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // Κίνηση κανονική
         Vector3 moveNormal = Vector3.zero;
         float currentSpeed = moveSpeed;
         string trigger = "";
@@ -243,22 +234,17 @@ public class PlayerMovement : MonoBehaviour
         {
             if (deathCountdownText != null)
                 deathCountdownText.text = $"Respawning in {Mathf.CeilToInt(countdown)}...";
-
             countdown -= Time.deltaTime;
             yield return null;
         }
 
         if (deathCountdownText != null)
             deathCountdownText.gameObject.SetActive(false);
-
         if (downedImage != null)
             downedImage.gameObject.SetActive(false);
 
         animator.speed = 1f;
-
-        // Τέλος FinalDeath - επιτρέπουμε πάλι κίνηση/περιστροφή
         isFinalDead = false;
-
         health.Revive(true);
 
         controller.enabled = false;
@@ -276,5 +262,11 @@ public class PlayerMovement : MonoBehaviour
             crawlAudioSource.Stop();
 
         isReviving = false;
+    }
+
+    // ➕ ΧΡΗΣΙΜΟ ΓΙΑ ZoneTrigger
+    public bool IsFinalDead()
+    {
+        return isFinalDead;
     }
 }

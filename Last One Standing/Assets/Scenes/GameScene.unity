@@ -1235,7 +1235,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe8217cb25a94449c9ddf5b87e83127a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 25
+  moveSpeed: 35
   footstepSource: {fileID: 1280911997}
   footstepClip: {fileID: 8300000, guid: 6ef8d9a9fb1c2475c9da4a9cec9303e5, type: 3}
   crawlAudioSource: {fileID: 1538482747}
@@ -8030,13 +8030,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ca45b6c07b364182943217472805f88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubesToChange: []
-  newMaterial: {fileID: 0}
-  originalMaterial: {fileID: 0}
+  cubesToChange:
+  - {fileID: 1815156941}
+  - {fileID: 870618134}
+  - {fileID: 967318787}
+  - {fileID: 846847850}
+  newMaterial: {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
+  originalMaterial: {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   progressText: {fileID: 637232400}
-  baseNameText: {fileID: 0}
-  baseName: C
-  rawImageToChangeColor: {fileID: 0}
+  baseNameText: {fileID: 817819411}
+  baseName: B
+  rawImageToChangeColor: {fileID: 1590539206}
   fillSpeed: 1
 --- !u!65 &229474174
 BoxCollider:
@@ -17144,13 +17148,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ca45b6c07b364182943217472805f88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubesToChange: []
-  newMaterial: {fileID: 0}
-  originalMaterial: {fileID: 0}
+  cubesToChange:
+  - {fileID: 1910497365}
+  - {fileID: 388428435}
+  - {fileID: 120921628}
+  - {fileID: 171733440}
+  newMaterial: {fileID: 2100000, guid: 8a0e49811809b48e09393e369e348e86, type: 2}
+  originalMaterial: {fileID: 2100000, guid: add11a15d193d42b782d771793649853, type: 2}
   progressText: {fileID: 637232400}
-  baseNameText: {fileID: 0}
-  baseName: C
-  rawImageToChangeColor: {fileID: 0}
+  baseNameText: {fileID: 817819411}
+  baseName: A
+  rawImageToChangeColor: {fileID: 1590539206}
   fillSpeed: 1
 --- !u!1 &1189459812
 GameObject:

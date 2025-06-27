@@ -100,34 +100,39 @@ public class GunScript : MonoBehaviour
         }
     }
 
-    void Shoot()
+void Shoot()
+{
+    muzzleFlash.Play();
+    currentAmmo--;
+    UpdateAmmoUI();
+
+    Ray ray = new Ray(fpsCam.transform.position, fpsCam.transform.forward);
+    RaycastHit hit;
+
+    int layerMask = ~LayerMask.GetMask("Player"); // Αγνόησε τον παίκτη
+
+    if (Physics.Raycast(ray, out hit, range, layerMask))
     {
-        muzzleFlash.Play();
-        currentAmmo--;
-        UpdateAmmoUI();
+        Debug.Log("Hit: " + hit.transform.name);
 
-        Ray ray = fpsCam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, range))
+        GameObject hitEffect = Instantiate(hitEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+        Destroy(hitEffect, 0.5f);
+
+        TargetHealth target = hit.transform.GetComponent<TargetHealth>();
+        if (target != null)
         {
-            Debug.Log("Hit: " + hit.transform.name);
-
-            GameObject hitEffect = Instantiate(hitEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
-            Destroy(hitEffect, 0.5f);
-
-            TargetHealth target = hit.transform.GetComponent<TargetHealth>();
-            if (target != null)
-            {
-                target.TakeDamage(damage);
-            }
+            target.TakeDamage(damage);
         }
-        else
-        {
-            Debug.Log("Nothing hit!");
-        }
-
-        Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 1f);
     }
+    else
+    {
+        Debug.Log("Nothing hit!");
+    }
+
+    Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 1f);
+}
+
+
 
     IEnumerator ReloadCoroutine()
     {
