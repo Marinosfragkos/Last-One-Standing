@@ -11,17 +11,20 @@ public class FullscreenButtons : MonoBehaviour
         UpdateButtons();
     }
 
-    public void SetFullscreenOn()
-    {
-        Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-        UpdateButtons();
-    }
+   public void SetFullscreenOn()
+{
+    Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+    Screen.fullScreen = true;
+    UpdateButtons();
+}
 
-    public void SetFullscreenOff()
-    {
-        Screen.fullScreenMode = FullScreenMode.Windowed;
-        UpdateButtons();
-    }
+public void SetFullscreenOff()
+{
+    Screen.fullScreenMode = FullScreenMode.Windowed;
+    Screen.fullScreen = false;
+    UpdateButtons();
+}
+
 
     void UpdateButtons()
     {

@@ -7,6 +7,11 @@ public class QualityDropdownHandler : MonoBehaviour
 
     void Start()
     {
+        foreach (var name in QualitySettings.names)
+{
+    Debug.Log(name);
+}
+
        int savedQuality = PlayerPrefs.GetInt("qualityLevel", QualitySettings.GetQualityLevel());
     QualitySettings.SetQualityLevel(savedQuality);
     qualityDropdown.value = savedQuality;
