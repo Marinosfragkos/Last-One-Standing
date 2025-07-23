@@ -7,9 +7,13 @@ public class CamFollow : MonoBehaviour
     public float followSpeed = 10f;
     public float rotationSpeed = 5f;
 
+    public static bool isCameraLocked = false; // ✅ Κοινή μεταβλητή
+
     void LateUpdate()
     {
-        // Υπολογίζει τη νέα θέση πίσω από τον παίκτη, με βάση την περιστροφή του
+        if (isCameraLocked) return; // ✅ Αν η κάμερα είναι κλειδωμένη, μην την κουνήσεις
+
+        // Υπολογίζει τη νέα θέση πίσω από τον παίκτη
         Vector3 desiredPosition = player.position + player.rotation * offset;
         transform.position = Vector3.Lerp(transform.position, desiredPosition, followSpeed * Time.deltaTime);
 

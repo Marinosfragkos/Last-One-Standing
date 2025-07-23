@@ -47,58 +47,71 @@ public class GunScript : MonoBehaviour
         health = GetComponentInParent<TargetHealth>(); // NEW
     }
 
-    void Update()
+   void Update()
+{
+    // Αν είναι ανοιχτές οι ρυθμίσεις, σταματάμε τον ήχο και επιστρέφουμε
+    if (SettingsUI.isSettingsOpen)
     {
-        // NEW: Μπλοκάρουμε τα πάντα αν ο παίκτης είναι σε crawl
-        if ((health != null && health.currentHealth <= 0f) || (health != null && IsPlayerDown()))
-            return;
-
-        if (isReloading)
-            return;
-
-        // Self-damage για debug
-        if (Input.GetKeyDown(KeyCode.V))
+        if (isShootingSoundPlaying && audioSource.isPlaying)
         {
-            if (health != null)
-            {
-                health.TakeDamage(10f);
-                Debug.Log("Self damage 10 applied.");
-            }
+            audioSource.Stop();
+            isShootingSoundPlaying = false;
         }
+        return;
+    }
 
-        bool canShoot = Input.GetButton("Fire1") && Time.time >= nextTimeToFire && currentAmmo > 0;
+    if (isReloading)
+        return;
 
-        if (canShoot)
+    // NEW: Μπλοκάρουμε τα πάντα αν ο παίκτης είναι σε crawl
+    if ((health != null && health.currentHealth <= 0f) || (health != null && IsPlayerDown()))
+        return;
+
+    // Self-damage για debug
+    if (Input.GetKeyDown(KeyCode.V))
+    {
+        if (health != null)
         {
-            nextTimeToFire = Time.time + fireRate;
-            Shoot();
-
-            if (!isShootingSoundPlaying && audioSource != null && shootSound != null)
-            {
-                if (fadeCoroutine != null)
-                    StopCoroutine(fadeCoroutine);
-
-                audioSource.clip = shootSound;
-                audioSource.loop = true;
-                audioSource.volume = defaultVolume;
-                audioSource.Play();
-                isShootingSoundPlaying = true;
-            }
+            health.TakeDamage(10f);
+            Debug.Log("Self damage 10 applied.");
         }
+    }
 
-        if ((!Input.GetButton("Fire1") || currentAmmo <= 0) && isShootingSoundPlaying)
+    // Shooting
+    bool canShoot = Input.GetButton("Fire1") && Time.time >= nextTimeToFire && currentAmmo > 0;
+
+    if (canShoot)
+    {
+        nextTimeToFire = Time.time + fireRate;
+        Shoot();
+
+        if (!isShootingSoundPlaying && audioSource != null && shootSound != null)
         {
             if (fadeCoroutine != null)
                 StopCoroutine(fadeCoroutine);
 
-            fadeCoroutine = StartCoroutine(FadeOutShootingSound());
-        }
-
-        if (Input.GetKeyDown(KeyCode.R) && !isReloading)
-        {
-            StartCoroutine(ReloadCoroutine());
+            audioSource.clip = shootSound;
+            audioSource.loop = true;
+            audioSource.volume = defaultVolume;
+            audioSource.Play();
+            isShootingSoundPlaying = true;
         }
     }
+
+    if ((!Input.GetButton("Fire1") || currentAmmo <= 0) && isShootingSoundPlaying)
+    {
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+
+        fadeCoroutine = StartCoroutine(FadeOutShootingSound());
+    }
+
+    if (Input.GetKeyDown(KeyCode.R) && !isReloading)
+    {
+        StartCoroutine(ReloadCoroutine());
+    }
+}
+
 
 void Shoot()
 {

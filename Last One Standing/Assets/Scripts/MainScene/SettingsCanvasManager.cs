@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SettingsCanvasManager : MonoBehaviour
 {
-    public Canvas settingsCanvas; // Το βασικό Canvas ρυθμίσεων (θα παραμείνει ανοιχτό)
+    public Canvas settingsCanvas; // Το βασικό Canvas ρυθμίσεων
     public Canvas[] categoryCanvases; // Τα Canvas για τις κατηγορίες ρυθμίσεων
     public GameObject[] categoryButtons; // Τα κουμπιά που αντιστοιχούν σε κάθε κατηγορία
 
@@ -10,41 +10,45 @@ public class SettingsCanvasManager : MonoBehaviour
 
     void Start()
     {
-        // Αρχικά απενεργοποιούμε όλα τα Canvas κατηγοριών, εκτός του αρχικού Settings Canvas
-        foreach (Canvas categoryCanvas in categoryCanvases)
+        // Ενεργοποιούμε μόνο το πρώτο Canvas (π.χ. Graphics), και απενεργοποιούμε τα υπόλοιπα
+        for (int i = 0; i < categoryCanvases.Length; i++)
         {
-            categoryCanvas.gameObject.SetActive(false);
+            if (i == 0)
+            {
+                categoryCanvases[i].gameObject.SetActive(true);
+                currentCategoryCanvas = categoryCanvases[i];
+            }
+            else
+            {
+                categoryCanvases[i].gameObject.SetActive(false);
+            }
         }
     }
 
-    // Μέθοδος για αλλαγή κατηγορίας και ενεργοποίηση του αντίστοιχου Canvas
+    // Εναλλαγή κατηγορίας (π.χ. Graphics, Audio κλπ.)
     public void SwitchCategoryCanvas(int categoryIndex)
     {
-        // Κλείνουμε το προηγούμενο ανοιχτό Canvas κατηγορίας αν υπάρχει
         if (currentCategoryCanvas != null)
         {
             currentCategoryCanvas.gameObject.SetActive(false);
         }
 
-        // Ενεργοποιούμε το νέο Canvas κατηγορίας
         if (categoryCanvases[categoryIndex] != null)
         {
             categoryCanvases[categoryIndex].gameObject.SetActive(true);
-            currentCategoryCanvas = categoryCanvases[categoryIndex]; // Αποθηκεύουμε το τρέχον ανοιχτό Canvas
+            currentCategoryCanvas = categoryCanvases[categoryIndex];
         }
     }
 
-    // Μέθοδος για το κουμπί κλεισίματος που απενεργοποιεί όλα τα Canvas κατηγοριών
+    // Κλείσιμο όλων των κατηγοριών και επαναφορά στο Settings Canvas
     public void CloseAllCategoryCanvases()
     {
-        // Απενεργοποιούμε όλα τα Canvas κατηγοριών
         foreach (Canvas categoryCanvas in categoryCanvases)
         {
             categoryCanvas.gameObject.SetActive(false);
         }
 
-        // Επαναφέρουμε το αρχικό Canvas (Settings)
         settingsCanvas.gameObject.SetActive(true);
-        currentCategoryCanvas = null; // Δεν υπάρχει ανοιχτό Canvas κατηγορίας πλέον
+        currentCategoryCanvas = null;
     }
 }
