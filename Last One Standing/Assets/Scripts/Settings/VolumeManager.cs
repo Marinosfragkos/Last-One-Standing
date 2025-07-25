@@ -11,7 +11,7 @@ public class VolumeManager : MonoBehaviour
 
     void Start()
     {
-        float savedVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
+        float savedVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
         volumeSlider.value = savedVolume;
         UpdateVolume(savedVolume);
 
@@ -20,11 +20,10 @@ public class VolumeManager : MonoBehaviour
 
     public void UpdateVolume(float value)
     {
-        // Ανάλογα με το Audio Mixer, μετατρέπουμε το 0-1 σε dB
-        float volumeInDb = Mathf.Log10(Mathf.Clamp(value, 0.0001f, 1f)) * 20f;
-        audioMixer.SetFloat("MasterVolume", volumeInDb);
+        float volumeInDb = (value > 0.0001f) ? Mathf.Log10(value) * 20f : -80f;
+        audioMixer.SetFloat("SFXVolume", volumeInDb); // Συνδέεται με το SFX group
 
-        PlayerPrefs.SetFloat("MasterVolume", value);
+        PlayerPrefs.SetFloat("SFXVolume", value);
         volumeText.text = Mathf.RoundToInt(value * 100f) + "%";
     }
 }
