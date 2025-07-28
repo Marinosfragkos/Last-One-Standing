@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FullScreenSwitch : MonoBehaviour
+public class ButtonSwitch : MonoBehaviour
 {
     public GameObject switchOn;
     public GameObject switchOff;

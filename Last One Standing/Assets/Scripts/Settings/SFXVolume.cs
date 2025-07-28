@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Audio;
 
-public class VolumeManager : MonoBehaviour
+public class SFXVolume : MonoBehaviour
 {
     public Slider volumeSlider;
     public TMP_Text volumeText;
