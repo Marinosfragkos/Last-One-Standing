@@ -98,7 +98,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         //αυτο να γινει 8
-        RoomOptions options = new RoomOptions { MaxPlayers = 1 };
+        RoomOptions options = new RoomOptions { MaxPlayers = 2 };
         PhotonNetwork.CreateRoom(null, options);
     }
 
@@ -115,7 +115,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
 
     void CheckStartGame()
     {
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 1)
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 2)
         {
             PhotonNetwork.LoadLevel("SecondLoadingScene");
         }
