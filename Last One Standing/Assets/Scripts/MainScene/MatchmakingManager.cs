@@ -40,21 +40,24 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
     public void OnStartButtonPressed()
     {
         if (!isCounting)
-        {
-            elapsedTime = 0f;
-            isCounting = true;
-            wantsToJoinRoom = true;
-            hasShownTimeoutPanel = false;
-            timeoutPanel.SetActive(false);
+{
+    wantsToJoinRoom = true;
+    elapsedTime = 0f;
+    isCounting = true;
+    hasShownTimeoutPanel = false;
+    timeoutPanel.SetActive(false);
+    startButtonImage.color = disabledColor;
 
-            startButtonImage.color = disabledColor;
+    if (!PhotonNetwork.IsConnected)
+        PhotonNetwork.ConnectUsingSettings();
+    else
+        PhotonNetwork.JoinRandomRoom();
+}
+else
+{
+    StopMatchmaking();
+}
 
-            ConnectToPhoton();
-        }
-        else
-        {
-            StopMatchmaking();
-        }
     }
 
     void Update()
@@ -87,18 +90,21 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
         }
     }
 
-    public override void OnConnectedToMaster()
+   public override void OnConnectedToMaster()
+{
+    Debug.Log("Connected to Master Server.");
+    if (wantsToJoinRoom)
     {
-        if (wantsToJoinRoom)
-        {
-            PhotonNetwork.JoinRandomRoom();
-        }
+        PhotonNetwork.JoinRandomRoom();
     }
+}
+
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
+        Debug.LogWarning($"JoinRandomFailed: {message} ({returnCode})");
         //αυτο να γινει 8
-        RoomOptions options = new RoomOptions { MaxPlayers = 2 };
+        RoomOptions options = new RoomOptions { MaxPlayers = 1 };
         PhotonNetwork.CreateRoom(null, options);
     }
 
@@ -115,7 +121,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
 
     void CheckStartGame()
     {
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 1)
         {
             PhotonNetwork.LoadLevel("SecondLoadingScene");
         }

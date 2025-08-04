@@ -2,11 +2,13 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using Photon.Pun;  // Photon namespace
 
-public class PlayerMovement : MonoBehaviour
+
+public class PlayerMovement : MonoBehaviourPun
 {
     public float moveSpeed = 3f;
-
+    private PhotonView photonView;
     private CharacterController controller;
     private Animator animator;
     private TargetHealth health;
@@ -31,6 +33,16 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+         if (!photonView.IsMine)
+        {
+            // Disable audio, UI, input on remote players
+            if (footstepSource != null) footstepSource.enabled = false;
+            if (crawlAudioSource != null) crawlAudioSource.enabled = false;
+            if (deathCountdownText != null) deathCountdownText.enabled = false;
+            if (downedImage != null) downedImage.enabled = false;
+            return; // Do not initialize further if not local player
+        }
+
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
         health = GetComponent<TargetHealth>();
@@ -62,6 +74,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (!photonView.IsMine) return;
+
         if (isFinalDead)
         {
             if (footstepSource != null && footstepSource.isPlaying)
