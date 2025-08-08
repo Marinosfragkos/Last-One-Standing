@@ -18,14 +18,14 @@ public class OpenCanvasOnButtonClick : MonoBehaviour
 {
     targetCanvas.gameObject.SetActive(true);
     SettingsUI.isSettingsOpen = true;
-    CamFollow.isCameraLocked = true; // ✅ Κλειδώνει την κάμερα
+    CamFollow.isCameraLocked = true; // 
 }
 
 public void CloseCanvas()
 {
     targetCanvas.gameObject.SetActive(false);
     SettingsUI.isSettingsOpen = false;
-    CamFollow.isCameraLocked = false; // ✅ Ξεκλειδώνει την κάμερα
+    CamFollow.isCameraLocked = false; // 
 }
 
 }
