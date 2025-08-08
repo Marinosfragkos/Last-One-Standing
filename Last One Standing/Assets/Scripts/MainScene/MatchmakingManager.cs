@@ -21,6 +21,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
     private bool wantsToJoinRoom = false;
     private bool hasShownTimeoutPanel = false;
 
+
     void Start()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -104,7 +105,7 @@ else
     {
         Debug.LogWarning($"JoinRandomFailed: {message} ({returnCode})");
         //αυτο να γινει 8
-        RoomOptions options = new RoomOptions { MaxPlayers = 1 };
+        RoomOptions options = new RoomOptions { MaxPlayers = 1};
         PhotonNetwork.CreateRoom(null, options);
     }
 
@@ -121,11 +122,14 @@ else
 
     void CheckStartGame()
     {
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 1)
+        Debug.Log($"CheckStartGame called - PlayerCount: {PhotonNetwork.CurrentRoom.PlayerCount}, IsMaster: {PhotonNetwork.IsMasterClient}");
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount ==1)
         {
+            Debug.Log("Loading SecondLoadingScene...");
             PhotonNetwork.LoadLevel("SecondLoadingScene");
         }
     }
+
 
     public override void OnLeftRoom()
     {

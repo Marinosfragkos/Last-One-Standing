@@ -8,7 +8,7 @@ using Photon.Pun;  // Photon namespace
 public class PlayerMovement : MonoBehaviourPun
 {
     public float moveSpeed = 3f;
-    private PhotonView photonView;
+  //  private PhotonView photonView;
     private CharacterController controller;
     private Animator animator;
     private TargetHealth health;
@@ -30,6 +30,11 @@ public class PlayerMovement : MonoBehaviourPun
 
     public TMP_Text deathCountdownText;
     public Image downedImage;
+
+    /*void Awake()
+{
+    photonView = GetComponent<PhotonView>();
+}*/
 
     void Start()
     {
@@ -74,7 +79,17 @@ public class PlayerMovement : MonoBehaviourPun
 
     void Update()
     {
+        if (photonView.IsMine)
+        {
+            Debug.Log("Controlling LOCAL player: " + PhotonNetwork.LocalPlayer.NickName);
+        }
+        else
+        {
+            Debug.Log("REMOTE player: " + photonView.Owner.NickName);
+        }
+
         if (!photonView.IsMine) return;
+        Debug.Log("Ελέγχω τον παίκτη μου: " + PhotonNetwork.LocalPlayer.NickName);
 
         if (isFinalDead)
         {
@@ -278,7 +293,7 @@ public class PlayerMovement : MonoBehaviourPun
         isReviving = false;
     }
 
-    // ➕ ΧΡΗΣΙΜΟ ΓΙΑ ZoneTrigger
+    //ΧΡΗΣΙΜΟ ΓΙΑ ZoneTrigger
     public bool IsFinalDead()
     {
         return isFinalDead;

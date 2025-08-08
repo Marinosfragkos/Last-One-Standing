@@ -1,42 +1,79 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
+using UnityEngine.UI;
+
 
 public class CustomResolutionSelector : MonoBehaviour
 {
-    public TMP_Dropdown resolutionDropdown;
+    public TMP_Dropdown ResDropDown;
+    public Toggle FullScreenToggle;
+    public List<CanvasScaler> canvasScalers;
 
-    private void Start()
+    bool IsFullScreen;
+    int SelectedResolution;
+
+    List<Resolution> AllowedResolutions = new List<Resolution>()
     {
-        resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
-        OnResolutionChanged(resolutionDropdown.value); // Set initial resolution
+        new Resolution { width = 1280, height = 720 },
+        new Resolution { width = 1366, height = 768 },
+        new Resolution { width = 1600, height = 900 },
+        new Resolution { width = 1920, height = 1080 },
+        new Resolution { width = 2560, height = 1440 },
+        new Resolution { width = 3840, height = 2160 }
+    };
+
+    void Start()
+{
+    IsFullScreen = true;
+
+    List<string> resolutionStringList = new List<string>();
+    foreach (Resolution res in AllowedResolutions)
+    {
+        resolutionStringList.Add(res.width + " x " + res.height);
     }
+    ResDropDown.ClearOptions();
+    ResDropDown.AddOptions(resolutionStringList);
 
-    void OnResolutionChanged(int index)
+    // Default επιλογή 1920x1080
+    int defaultIndex = AllowedResolutions.FindIndex(res => res.width == 1920 && res.height == 1080);
+    if (defaultIndex == -1)
+        defaultIndex = 0;
+
+    ResDropDown.value = defaultIndex;
+    SelectedResolution = defaultIndex;
+
+    Screen.SetResolution(AllowedResolutions[SelectedResolution].width, AllowedResolutions[SelectedResolution].height, IsFullScreen);
+
+    // Αυτόματη εύρεση CanvasScaler στη σκηνή
+    canvasScalers = new List<CanvasScaler>(Object.FindObjectsByType<CanvasScaler>(FindObjectsSortMode.None));
+
+
+    // Ρύθμιση του CanvasScaler για την αρχική ανάλυση
+    foreach (CanvasScaler scaler in canvasScalers)
     {
-        switch (index)
-        {
-            case 0:
-                SetResolution(1366, 768);
-                break;
-            case 1:
-                SetResolution(1600, 900);
-                break;
-            case 2:
-                SetResolution(1920, 1080);
-                break;
-            case 3:
-                SetResolution(2560, 1440);
-                break;
-            case 4:
-                SetResolution(3840, 2160);
-                break;
-        }
+        scaler.referenceResolution = new Vector2(AllowedResolutions[SelectedResolution].width, AllowedResolutions[SelectedResolution].height);
     }
+}
 
-    void SetResolution(int width, int height)
+
+    public void ChangeResolution()
+{
+    SelectedResolution = ResDropDown.value;
+
+    Resolution res = AllowedResolutions[SelectedResolution];
+    Screen.SetResolution(res.width, res.height, IsFullScreen);
+
+    foreach (CanvasScaler scaler in canvasScalers)
     {
-        // Αν θέλεις Fullscreen:
-        Screen.SetResolution(width, height, FullScreenMode.ExclusiveFullScreen);
-        Debug.Log("Resolution set to: " + width + " x " + height);
+        scaler.referenceResolution = new Vector2(res.width, res.height);
+    }
+}
+
+
+    public void ChangeFullScreen()
+    {
+        IsFullScreen = FullScreenToggle.isOn;
+        Screen.SetResolution(AllowedResolutions[SelectedResolution].width, AllowedResolutions[SelectedResolution].height, IsFullScreen);
     }
 }

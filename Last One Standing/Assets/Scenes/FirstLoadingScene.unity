@@ -881,8 +881,8 @@ GameObject:
   - component: {fileID: 1741971851}
   - component: {fileID: 1741971850}
   - component: {fileID: 1741971849}
-  - component: {fileID: 1741971853}
   - component: {fileID: 1741971854}
+  - component: {fileID: 1741971855}
   m_Layer: 5
   m_Name: LoadingScene
   m_TagString: Untagged
@@ -919,10 +919,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -976,18 +976,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1741971853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1741971848}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a75e6e85853e94a289043af4b748f237, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1741971854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1002,6 +990,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   progressBar: {fileID: 1341450904}
   progressText: {fileID: 599821977}
+--- !u!114 &1741971855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741971848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db2fcbc1afa0c4fd0979a0eb01b29e81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1744088763
 GameObject:
   m_ObjectHideFlags: 0
