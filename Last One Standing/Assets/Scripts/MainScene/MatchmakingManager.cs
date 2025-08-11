@@ -1,3 +1,166 @@
+/*using UnityEngine;
+using UnityEngine.UI;
+using Photon.Pun;
+using Photon.Realtime;
+using TMPro;
+
+public class MatchmakingManager : MonoBehaviourPunCallbacks
+{
+    public Button startButton;
+    public TextMeshProUGUI startButtonText;
+    public GameObject timeoutPanel;     // Προσθέτουμε το panel timeout
+    public Button waitButton;           // Κουμπί "Περίμενε"
+    public Button leaveButton;          // Κουμπί "Έξοδος"
+
+    private Color originalColor;
+    private Color disabledColor = new Color(0f, 0f, 0f, 0.5f);
+
+    private float elapsedTime = 0f;
+    private bool isCounting = false;
+    private bool wantsToJoinRoom = false;
+    private bool hasShownTimeoutPanel = false;
+
+    //private Color originalColor;
+   // private Color disabledColor = new Color(0.3f, 0.3f, 0.3f, 0.7f); // γκρι με λίγη διαφάνεια
+
+   void Start()
+{
+    PhotonNetwork.AutomaticallySyncScene = true;
+    startButtonText.text = "Start";
+    startButton.onClick.AddListener(OnStartButtonPressed);
+    timeoutPanel.SetActive(false);
+
+    if (startButton.TryGetComponent<Image>(out Image img))
+        originalColor = img.color;
+
+    waitButton.onClick.AddListener(OnWaitButtonPressed);
+    leaveButton.onClick.AddListener(OnLeaveButtonPressed);
+}
+
+    public void OnStartButtonPressed()
+    {
+        if (!isCounting)
+        {
+            // Ξεκινάμε matchmaking
+            wantsToJoinRoom = true;
+            elapsedTime = 0f;
+            isCounting = true;
+            hasShownTimeoutPanel = false;
+            timeoutPanel.SetActive(false);
+           // SetStartButtonInteractable(false);
+
+            if (!PhotonNetwork.IsConnected)
+                PhotonNetwork.ConnectUsingSettings();
+            else
+                PhotonNetwork.JoinRandomRoom();
+        }
+        else
+        {
+            // Σταματάμε matchmaking
+            StopMatchmaking();
+        }
+    }
+
+void Update()
+{
+    if (isCounting)
+    {
+        elapsedTime += Time.deltaTime;
+
+        int minutes = Mathf.FloorToInt(elapsedTime / 60f);
+        int seconds = Mathf.FloorToInt(elapsedTime % 60f);
+        startButtonText.text = $"<size=65%>Matchmaking: {minutes:00}:{seconds:00}</size>";
+
+        SetStartButtonColor(disabledColor);
+
+        if (!hasShownTimeoutPanel && elapsedTime >= 30f)
+        {
+            hasShownTimeoutPanel = true;
+            timeoutPanel.SetActive(true);
+        }
+    }
+    else
+    {
+        startButtonText.text = "Start";
+        SetStartButtonColor(originalColor);
+    }
+}
+
+
+
+
+    public override void OnConnectedToMaster()
+    {
+        if (wantsToJoinRoom)
+            PhotonNetwork.JoinRandomRoom();
+    }
+
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        RoomOptions options = new RoomOptions { MaxPlayers = 2 };
+        PhotonNetwork.CreateRoom(null, options);
+    }
+
+    public override void OnJoinedRoom()
+    {
+        CheckStartGame();
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        CheckStartGame();
+    }
+
+    void CheckStartGame()
+    {
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        {
+            PhotonNetwork.LoadLevel("SecondLoadingScene");
+        }
+    }
+
+void StopMatchmaking()
+{
+    isCounting = false;
+    elapsedTime = 0f;
+    wantsToJoinRoom = false;
+    timeoutPanel.SetActive(false);
+
+    startButtonText.text = "Start";
+    SetStartButtonColor(originalColor);
+
+    if (PhotonNetwork.InRoom)
+        PhotonNetwork.LeaveRoom();
+    else if (PhotonNetwork.IsConnected)
+        PhotonNetwork.Disconnect();
+}
+    void SetStartButtonColor(Color color)
+{
+    if (startButton.TryGetComponent<Image>(out Image img))
+        img.color = color;
+}
+
+    void SetStartButtonInteractable(bool interactable)
+    {
+        startButton.interactable = interactable;
+        if (startButton.TryGetComponent<Image>(out Image img))
+            img.color = interactable ? originalColor : disabledColor;
+    }
+
+    void OnWaitButtonPressed()
+    {
+        timeoutPanel.SetActive(false);
+    }
+
+    void OnLeaveButtonPressed()
+    {
+        StopMatchmaking();
+    }
+}*/
+
+
+
+
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
@@ -21,6 +184,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
     private bool wantsToJoinRoom = false;
     private bool hasShownTimeoutPanel = false;
 
+    private const string roomName = "MainRoom"; // Σταθερό όνομα δωματίου
 
     void Start()
     {
@@ -41,24 +205,23 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
     public void OnStartButtonPressed()
     {
         if (!isCounting)
-{
-    wantsToJoinRoom = true;
-    elapsedTime = 0f;
-    isCounting = true;
-    hasShownTimeoutPanel = false;
-    timeoutPanel.SetActive(false);
-    startButtonImage.color = disabledColor;
+        {
+            wantsToJoinRoom = true;
+            elapsedTime = 0f;
+            isCounting = true;
+            hasShownTimeoutPanel = false;
+            timeoutPanel.SetActive(false);
+            startButtonImage.color = disabledColor;
 
-    if (!PhotonNetwork.IsConnected)
-        PhotonNetwork.ConnectUsingSettings();
-    else
-        PhotonNetwork.JoinRandomRoom();
-}
-else
-{
-    StopMatchmaking();
-}
-
+            if (!PhotonNetwork.IsConnected)
+                PhotonNetwork.ConnectUsingSettings();
+            else
+                JoinOrCreateMainRoom();
+        }
+        else
+        {
+            StopMatchmaking();
+        }
     }
 
     void Update()
@@ -79,57 +242,41 @@ else
         }
     }
 
-    void ConnectToPhoton()
+    void JoinOrCreateMainRoom()
     {
-        if (!PhotonNetwork.IsConnected)
-        {
-            PhotonNetwork.ConnectUsingSettings();
-        }
-        else if (PhotonNetwork.IsConnectedAndReady)
-        {
-            PhotonNetwork.JoinRandomRoom();
-        }
+        RoomOptions options = new RoomOptions { MaxPlayers = 2};
+        PhotonNetwork.JoinOrCreateRoom(roomName, options, TypedLobby.Default);
     }
 
-   public override void OnConnectedToMaster()
-{
-    Debug.Log("Connected to Master Server.");
-    if (wantsToJoinRoom)
+    public override void OnConnectedToMaster()
     {
-        PhotonNetwork.JoinRandomRoom();
-    }
-}
-
-
-    public override void OnJoinRandomFailed(short returnCode, string message)
-    {
-        Debug.LogWarning($"JoinRandomFailed: {message} ({returnCode})");
-        //αυτο να γινει 8
-        RoomOptions options = new RoomOptions { MaxPlayers = 1};
-        PhotonNetwork.CreateRoom(null, options);
+        Debug.Log("Connected to Master Server.");
+        if (wantsToJoinRoom)
+        {
+            JoinOrCreateMainRoom();
+        }
     }
 
     public override void OnJoinedRoom()
     {
-        Debug.Log("Joined Room: " + PhotonNetwork.CurrentRoom.Name);
+        Debug.Log($"Joined Room: {PhotonNetwork.CurrentRoom.Name} | Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
         CheckStartGame();
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
+        Debug.Log($"Player entered: {newPlayer.NickName} | Total: {PhotonNetwork.CurrentRoom.PlayerCount}");
         CheckStartGame();
     }
 
     void CheckStartGame()
     {
-        Debug.Log($"CheckStartGame called - PlayerCount: {PhotonNetwork.CurrentRoom.PlayerCount}, IsMaster: {PhotonNetwork.IsMasterClient}");
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount ==1)
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2 && PhotonNetwork.IsMasterClient)
         {
-            Debug.Log("Loading SecondLoadingScene...");
+            Debug.Log("Both players ready, loading SecondLoadingScene...");
             PhotonNetwork.LoadLevel("SecondLoadingScene");
         }
     }
-
 
     public override void OnLeftRoom()
     {
@@ -154,7 +301,6 @@ else
     void OnWaitButtonPressed()
     {
         timeoutPanel.SetActive(false);
-        // Συνεχίζουμε τη μέτρηση
     }
 
     void OnLeaveButtonPressed()
