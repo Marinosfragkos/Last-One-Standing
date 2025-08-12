@@ -87,7 +87,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2802463238897279433
 Transform:
   m_ObjectHideFlags: 0
@@ -6123,6 +6123,8 @@ GameObject:
   - component: {fileID: 49628991332879741}
   - component: {fileID: -256333607216619149}
   - component: {fileID: 4008325216976754491}
+  - component: {fileID: 6860070984764824844}
+  - component: {fileID: 8037750150293252649}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -6465,6 +6467,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 4008325216976754491}
+  - {fileID: 6860070984764824844}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -6484,6 +6487,60 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
   m_UseLocal: 1
+--- !u!114 &6860070984764824844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5584455963665279994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters:
+  - Type: 9
+    SynchronizeType: 1
+    Name: Forward
+  - Type: 9
+    SynchronizeType: 1
+    Name: Backward
+  - Type: 9
+    SynchronizeType: 1
+    Name: Left
+  - Type: 9
+    SynchronizeType: 1
+    Name: Right
+  - Type: 9
+    SynchronizeType: 1
+    Name: Idle
+  - Type: 9
+    SynchronizeType: 1
+    Name: CrawlIdle
+  - Type: 9
+    SynchronizeType: 1
+    Name: FinalDeath
+  - Type: 9
+    SynchronizeType: 1
+    Name: Crawl
+  m_SynchronizeLayers:
+  - SynchronizeType: 1
+    LayerIndex: 0
+--- !u!114 &8037750150293252649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5584455963665279994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a69d5dea896cf4013aa5760e30cb9a72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5592745233623969001
 GameObject:
   m_ObjectHideFlags: 0

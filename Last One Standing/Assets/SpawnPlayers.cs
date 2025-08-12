@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 using Photon.Pun;
 
 public class SpawnPlayers : MonoBehaviour
@@ -31,7 +31,41 @@ public class SpawnPlayers : MonoBehaviour
 
         PhotonNetwork.Instantiate(playerPrefab.name, spawn.position, spawn.rotation);
     }
+}*/
+
+
+using UnityEngine;
+using Photon.Pun;
+
+public class SpawnPlayers : MonoBehaviour
+{
+    public GameObject playerPrefab;
+
+    public Transform spawnPoint1;
+    public Transform spawnPoint2;
+    // public Transform spawnPoint3;
+   // public Transform spawnPoint4;
+
+    private bool playerSpawned = false;
+
+    private void Start()
+    {
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && !playerSpawned)
+        {
+            SpawnPlayer();
+        }
+    }
+
+    void SpawnPlayer()
+    {
+        playerSpawned = true;
+
+        Transform spawn = PhotonNetwork.LocalPlayer.ActorNumber == 1 ? spawnPoint1 : spawnPoint2;
+
+        PhotonNetwork.Instantiate(playerPrefab.name, spawn.position, spawn.rotation);
+    }
 }
+
 
 
 
