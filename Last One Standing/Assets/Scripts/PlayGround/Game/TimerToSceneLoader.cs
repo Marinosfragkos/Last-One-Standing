@@ -4,7 +4,7 @@ using TMPro;  // Για TextMeshPro
 
 public class TimerToSceneLoader : MonoBehaviour
 {
-    public float timeToWait = 10f; // 30 δευτερόλεπτα
+    public float timeToWait =600f; // 10 λεπτά
     private float timer = 0f;
 
     public TextMeshProUGUI countdownText; // Σύνδεσέ το από το Inspector

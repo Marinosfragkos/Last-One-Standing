@@ -5238,7 +5238,7 @@ AudioSource:
   m_GameObject: {fileID: 3538392203098040710}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 2af4b7ee90b444912a342b9a79586b7d, type: 2}
+  OutputAudioMixerGroup: {fileID: -4130840788762163365, guid: 2af4b7ee90b444912a342b9a79586b7d, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -5286,7 +5286,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -5503,7 +5503,7 @@ AudioSource:
   m_GameObject: {fileID: 4562574153241469358}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 2af4b7ee90b444912a342b9a79586b7d, type: 2}
+  OutputAudioMixerGroup: {fileID: -4130840788762163365, guid: 2af4b7ee90b444912a342b9a79586b7d, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -5551,7 +5551,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -6117,7 +6117,6 @@ GameObject:
   - component: {fileID: 7875668976953970651}
   - component: {fileID: 7904454750077421106}
   - component: {fileID: 217128670685293516}
-  - component: {fileID: 6480604375246963790}
   - component: {fileID: 7800331059122937866}
   - component: {fileID: 1290581399347078390}
   - component: {fileID: 49628991332879741}
@@ -6125,6 +6124,7 @@ GameObject:
   - component: {fileID: 4008325216976754491}
   - component: {fileID: 6860070984764824844}
   - component: {fileID: 8037750150293252649}
+  - component: {fileID: 1048115330091908901}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -6371,20 +6371,6 @@ MonoBehaviour:
   healthSlider: {fileID: 383159332079995547}
   fillImage: {fileID: 4660797173460601228}
   reviveText: {fileID: 5041306928393464680}
---- !u!114 &6480604375246963790
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5584455963665279994}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b3776c98150b44ae8fcff1b0622ff28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeToWait: 600
-  countdownText: {fileID: 0}
 --- !u!54 &7800331059122937866
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6541,6 +6527,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a69d5dea896cf4013aa5760e30cb9a72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1048115330091908901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5584455963665279994}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73b75578f18104cdaaab20f75be6f201, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  team: 0
 --- !u!1 &5592745233623969001
 GameObject:
   m_ObjectHideFlags: 0
@@ -6854,7 +6853,7 @@ AudioSource:
   m_GameObject: {fileID: 6610908388260369291}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 2af4b7ee90b444912a342b9a79586b7d, type: 2}
+  OutputAudioMixerGroup: {fileID: -4130840788762163365, guid: 2af4b7ee90b444912a342b9a79586b7d, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -6902,7 +6901,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -7443,7 +7442,7 @@ PrefabInstance:
     - target: {fileID: 5822821947120931875, guid: 98a8a534662644fa29f6be37e32219cc, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 46e4284f36bcd466bb9473b0617afb4b, type: 2}
+      objectReference: {fileID: 2100000, guid: 5a0123a358a0f44e090f0b0584f5ab9a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
