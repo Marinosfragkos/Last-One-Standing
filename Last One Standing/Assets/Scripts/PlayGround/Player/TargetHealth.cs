@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -180,4 +180,152 @@ public class TargetHealth : MonoBehaviour
         }
     }
     
+}
+*/
+
+
+
+
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using System.Collections;
+using Photon.Pun;
+
+public class TargetHealth : MonoBehaviourPun
+{
+    public float maxHealth = 100f;
+    public float currentHealth;
+
+    public Slider healthSlider;
+    public Image fillImage;
+    public TMP_Text reviveText;
+
+    [HideInInspector]
+    public bool isDown = false;
+
+    private Coroutine reviveCoroutine;
+    private Vector3 lastPosition;
+
+    void Start()
+    {
+        currentHealth = maxHealth;
+        isDown = false;
+
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currentHealth;
+        }
+
+        if (fillImage != null)
+            fillImage.color = Color.green;
+
+        if (reviveText != null)
+            reviveText.gameObject.SetActive(false);
+
+        lastPosition = transform.position;
+    }
+
+    void Update()
+    {
+        if (!photonView.IsMine) return;
+
+        if (isDown)
+        {
+            if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
+            {
+                reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
+            }
+
+            // Ακύρωση revive αν μετακινηθεί
+            if (reviveCoroutine != null && Vector3.Distance(transform.position, lastPosition) > 0.05f)
+            {
+                StopCoroutine(reviveCoroutine);
+                reviveCoroutine = null;
+                if (reviveText != null)
+                    reviveText.gameObject.SetActive(false);
+                Debug.Log("Revive canceled due to movement.");
+            }
+
+            lastPosition = transform.position;
+        }
+    }
+
+    [PunRPC]
+    public void TakeDamageRPC(float amount)
+    {
+        if (isDown) return;
+
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        UpdateHealthUI();
+
+        if (currentHealth <= 0)
+        {
+            EnterDownState();
+            photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
+        }
+    }
+
+    void UpdateHealthUI()
+    {
+        if (healthSlider != null)
+            healthSlider.value = currentHealth;
+
+        if (fillImage != null)
+            fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+    }
+
+    void EnterDownState()
+    {
+        isDown = true;
+        currentHealth = 0f;
+        UpdateHealthUI();
+    }
+
+    [PunRPC]
+    void SyncDownStateRPC(bool down)
+    {
+        isDown = down;
+        UpdateHealthUI();
+    }
+
+    IEnumerator ReviveCountdownCoroutine()
+    {
+        if (reviveText != null)
+            reviveText.gameObject.SetActive(true);
+
+        float countdown = 4f;
+        while (countdown > 0f)
+        {
+            if (reviveText != null)
+                reviveText.text = $"{countdown:F1}s";
+
+            countdown -= Time.deltaTime;
+            yield return null;
+        }
+
+        if (reviveText != null)
+            reviveText.gameObject.SetActive(false);
+
+        reviveCoroutine = null;
+        photonView.RPC("ReviveRPC", RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void Revive(bool fullRevive = false)
+    {
+        isDown = false;
+        currentHealth = fullRevive ? maxHealth : 30f;
+        UpdateHealthUI();
+
+        // Ενημέρωση όπλου
+        GunScript gun = GetComponent<GunScript>();
+        if (gun != null && fullRevive)
+        {
+            gun.ResetAmmo();
+        }
+    }
 }

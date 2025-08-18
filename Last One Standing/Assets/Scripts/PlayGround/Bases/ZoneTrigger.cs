@@ -1,39 +1,29 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using Photon.Pun;
-using Photon.Realtime;
 
 public class ZoneTrigger : MonoBehaviour
 {
     [Header("Zone Settings")]
     public GameObject[] cubesToChange;
-    public Material blueMaterial;
-    public Material redMaterial;
+    public Material newMaterial;
     public Material originalMaterial;
 
     [Header("Progress Settings")]
-    public TextMeshProUGUI blueProgressText;
-    public TextMeshProUGUI redProgressText;
+    public TextMeshProUGUI progressText;
     public TextMeshProUGUI baseNameText;
     public string baseName = "A";
 
-    public bool IsComplete => blueProgress >= 100f || redProgress >= 100f;
-
     [Header("UI Image to Change Color")]
     public RawImage rawImageToChangeColor;
-    public Color blueUIColor = new Color(9f / 255f, 80f / 255f, 178f / 255f, 0.84f);
-    public Color redUIColor = new Color(178f / 255f, 9f / 255f, 9f / 255f, 0.84f);
-    private Color originalRawImageColor;
-
     public float fillSpeed = 1f;
 
-    private float blueProgress = 0f;
-    private float redProgress = 0f;
+    public bool IsComplete => progress >= 100f;
 
     private bool isActive = false;
+    private float progress = 0f;
     private bool playerInside = false;
-    private string currentTeamInside = null;
+    private Color originalRawImageColor;
 
     private void Start()
     {
@@ -47,29 +37,28 @@ public class ZoneTrigger : MonoBehaviour
 
     private void Update()
     {
-        if (!isActive || !playerInside) return;
+        if (!isActive) return;
 
-        if (currentTeamInside == "Blue" && blueProgress < 100f)
+        if (playerInside && progress < 100f)
         {
-            blueProgress += fillSpeed * Time.deltaTime;
-            blueProgress = Mathf.Min(blueProgress, 100f);
-            UpdateProgressUI();
-        }
-        else if (currentTeamInside == "Red" && redProgress < 100f)
-        {
-            redProgress += fillSpeed * Time.deltaTime;
-            redProgress = Mathf.Min(redProgress, 100f);
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                PlayerMovement movement = player.GetComponent<PlayerMovement>();
+                if (movement != null && movement.IsFinalDead())
+                    return;
+            }
+
+            progress += fillSpeed * Time.deltaTime;
+            progress = Mathf.Min(progress, 100f);
             UpdateProgressUI();
         }
     }
 
     private void UpdateProgressUI()
     {
-        if (blueProgressText != null)
-            blueProgressText.text = $"{blueProgress:0}%";
-
-        if (redProgressText != null)
-            redProgressText.text = $"{redProgress:0}%";
+        if (progressText != null)
+            progressText.text = $"{progress:0}%";
     }
 
     public void UpdateBaseNameUI(string customText)
@@ -88,61 +77,56 @@ public class ZoneTrigger : MonoBehaviour
     {
         if (!isActive || !other.CompareTag("Player")) return;
 
-        PhotonView pv = other.GetComponent<PhotonView>();
-        if (pv == null) return;
-
-        Player player = pv.Owner;
-        if (player == null || !player.CustomProperties.ContainsKey("team")) return;
-
-        currentTeamInside = (string)player.CustomProperties["team"];
         playerInside = true;
 
         foreach (GameObject cube in cubesToChange)
         {
             Renderer rend = cube.GetComponent<Renderer>();
             if (rend != null)
-            {
-                rend.material = currentTeamInside == "Blue" ? blueMaterial : redMaterial;
-            }
+                rend.material = newMaterial;
         }
 
         if (rawImageToChangeColor != null)
-            rawImageToChangeColor.color = currentTeamInside == "Blue" ? blueUIColor : redUIColor;
+            rawImageToChangeColor.color = new Color(9f / 255f, 80f / 255f, 178f / 255f, 0.8431373f);
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!isActive || !other.CompareTag("Player")) return;
 
-        PhotonView pv = other.GetComponent<PhotonView>();
-        if (pv == null) return;
+        playerInside = false;
 
-        Player player = pv.Owner;
-        if (player == null || !player.CustomProperties.ContainsKey("team")) return;
-
-        string team = (string)player.CustomProperties["team"];
-        if (team == currentTeamInside)
+        foreach (GameObject cube in cubesToChange)
         {
-            playerInside = false;
-
-            foreach (GameObject cube in cubesToChange)
-            {
-                Renderer rend = cube.GetComponent<Renderer>();
-                if (rend != null)
-                    rend.material = originalMaterial;
-            }
-
-            if (rawImageToChangeColor != null)
-                rawImageToChangeColor.color = originalRawImageColor;
+            Renderer rend = cube.GetComponent<Renderer>();
+            if (rend != null)
+                rend.material = originalMaterial;
         }
+
+        if (rawImageToChangeColor != null)
+            rawImageToChangeColor.color = originalRawImageColor;
     }
 
     public void ResetZone()
     {
-        blueProgress = 0f;
-        redProgress = 0f;
+        progress = 0f;
         UpdateProgressUI();
         UpdateBaseNameUI();
+    }
+
+    private bool IsPlayerInside()
+    {
+        Collider zoneCollider = GetComponent<Collider>();
+        if (zoneCollider == null) return false;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) return false;
+
+        Collider playerCollider = player.GetComponent<Collider>();
+        if (playerCollider == null) return false;
+
+        // Έλεγχος αν τα collider επικαλύπτονται
+        return zoneCollider.bounds.Intersects(playerCollider.bounds);
     }
 
     public void SetActive(bool state)
@@ -153,6 +137,11 @@ public class ZoneTrigger : MonoBehaviour
         {
             UpdateBaseNameUI();
             EnableCubes();
+
+            if (IsPlayerInside())
+                playerInside = true;
+            else
+                playerInside = false;
         }
         else
         {

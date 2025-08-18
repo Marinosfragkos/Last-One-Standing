@@ -1,37 +1,35 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;  // Χρειάζεται για το TextMeshPro
+using Photon.Pun;
+using TMPro;
 
-public class SecondLoadingScreen : MonoBehaviour
+public class SecondLoadingScreen : MonoBehaviourPunCallbacks
 {
     public Slider progressBar;
-    public TMP_Text progressText;  // Χρήση TextMeshPro
-
+    public TMP_Text progressText;
+    public string gameplayScene = "GameScene";
     void Start()
     {
-        StartCoroutine(LoadSceneAsync(3)); // Το Scene Index 1 είναι η επόμενη σκηνή
+        if (PhotonNetwork.IsMasterClient)
+        {
+            StartCoroutine(FakeLoadingAndLoadScene());
+        }
     }
 
-    IEnumerator LoadSceneAsync(int sceneIndex)
+    IEnumerator FakeLoadingAndLoadScene()
     {
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneIndex);
-        operation.allowSceneActivation = false; // Μην αλλάξει σκηνή μέχρι να ολοκληρωθεί το loading
+        float fakeProgress = 0f;
 
-        while (!operation.isDone)
+        while (fakeProgress < 1f)
         {
-            float progress = Mathf.Clamp01(operation.progress / 0.9f); // Κανονικοποίηση στο 100%
-            progressBar.value = progress;
-            progressText.text = $"{progress * 100:F0}%"; // Ποσοστό χωρίς δεκαδικά
-
-            if (progress >= 1f)
-            {
-                yield return new WaitForSeconds(2f); // Μικρή καθυστέρηση για smooth effect
-                operation.allowSceneActivation = true; // Μετάβαση στην επόμενη σκηνή
-            }
-
+            fakeProgress += Time.deltaTime / 2f; // 2 δευτερόλεπτα fake loading
+            progressBar.value = fakeProgress;
+            progressText.text = $"{(fakeProgress * 100f):F0}%";
             yield return null;
         }
+
+        // Όταν τελειώσει, φορτώνουμε με Photon ώστε όλοι να syncάρουν
+        PhotonNetwork.LoadLevel(gameplayScene);
     }
 }

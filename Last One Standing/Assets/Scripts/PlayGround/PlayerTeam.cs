@@ -1,7 +1,12 @@
 using UnityEngine;
 
+public enum Team
+{
+    Red,
+    Blue
+}
+
 public class PlayerTeam : MonoBehaviour
 {
-    public enum Team { Blue, Red }
     public Team team;
 }

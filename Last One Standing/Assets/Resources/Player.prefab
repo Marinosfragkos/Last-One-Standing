@@ -97,7 +97,7 @@ Transform:
   m_GameObject: {fileID: 855606920425484532}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: -0}
-  m_LocalPosition: {x: 2.8900146, y: -1.7799997, z: -28.86267}
+  m_LocalPosition: {x: 2.8900146, y: -1.7799997, z: -16.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5881,7 +5881,7 @@ Transform:
   m_GameObject: {fileID: 5509652213519153685}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0011423717, y: 0.99919754, z: -0.039067134, w: 0.008763028}
-  m_LocalPosition: {x: 3.07, y: 13.53, z: -6.35}
+  m_LocalPosition: {x: 4.85, y: 13.71, z: -4.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6125,6 +6125,7 @@ GameObject:
   - component: {fileID: 6860070984764824844}
   - component: {fileID: 8037750150293252649}
   - component: {fileID: 1048115330091908901}
+  - component: {fileID: 9144934499514314353}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -6371,6 +6372,7 @@ MonoBehaviour:
   healthSlider: {fileID: 383159332079995547}
   fillImage: {fileID: 4660797173460601228}
   reviveText: {fileID: 5041306928393464680}
+  isDown: 0
 --- !u!54 &7800331059122937866
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6534,12 +6536,26 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5584455963665279994}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73b75578f18104cdaaab20f75be6f201, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
+--- !u!114 &9144934499514314353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5584455963665279994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5e1d517610654076b1625fbe63e9be7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blueMaterial: {fileID: 2100000, guid: 46e4284f36bcd466bb9473b0617afb4b, type: 2}
+  redMaterial: {fileID: 2100000, guid: 5a0123a358a0f44e090f0b0584f5ab9a, type: 2}
 --- !u!1 &5592745233623969001
 GameObject:
   m_ObjectHideFlags: 0

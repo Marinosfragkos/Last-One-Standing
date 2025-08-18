@@ -239,6 +239,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   progressBar: {fileID: 226240158}
   progressText: {fileID: 1093458101}
+  gameplayScene: GameScene
 --- !u!1 &145178664
 GameObject:
   m_ObjectHideFlags: 0
