@@ -89,7 +89,7 @@ public class PlayerMovement : MonoBehaviourPun
         }
 
         if (!photonView.IsMine) return;
-        Debug.Log("Ελέγχω τον παίκτη μου: " + PhotonNetwork.LocalPlayer.NickName);
+      //  Debug.Log("Ελέγχω τον παίκτη μου: " + PhotonNetwork.LocalPlayer.NickName);
 
         if (isFinalDead)
         {
