@@ -408,8 +408,8 @@ public class ZoneTrigger : MonoBehaviourPun
     public bool IsComplete => blueProgress >= 100f || redProgress >= 100f;
 
     private bool isActive = false;
-    private float blueProgress = 0f;
-    private float redProgress = 0f;
+    public float blueProgress = 0f;
+    public float redProgress = 0f;
     private string lastTeam = "neutral";   // τελευταία ενεργή ομάδα
     private Color originalRawImageColor;
 

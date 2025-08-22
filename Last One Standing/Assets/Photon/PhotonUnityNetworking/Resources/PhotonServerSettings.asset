@@ -45,6 +45,7 @@ MonoBehaviour:
   - SetPlayerColor
   - UpdateZoneMaterial
   - SyncProgressAndColor
+  - ShowEndGameUI
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
