@@ -93,7 +93,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
             JoinOrCreateMainRoom();
         }
     }
-    
+
     public override void OnJoinedRoom()
     {
         Debug.Log($"Joined Room: {PhotonNetwork.CurrentRoom.Name} | Players: {PhotonNetwork.CurrentRoom.PlayerCount}");

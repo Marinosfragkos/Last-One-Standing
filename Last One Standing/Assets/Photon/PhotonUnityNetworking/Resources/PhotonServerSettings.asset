@@ -16,10 +16,10 @@ MonoBehaviour:
     AppIdRealtime: 69ee4c4b-a20e-408d-bf7f-0b52a08058e8
     AppIdFusion: 
     AppIdChat: 
-    AppIdVoice: 
+    AppIdVoice: 3c82e640-cb13-40cd-944f-a8268f0424b6
     AppVersion: 
     UseNameServer: 1
-    FixedRegion: us
+    FixedRegion: eu
     Server: 
     Port: 0
     ProxyServer: 
@@ -28,24 +28,34 @@ MonoBehaviour:
     AuthMode: 0
     EnableLobbyStatistics: 0
     NetworkLogging: 1
-  DevRegion: 
+  DevRegion: eu
   PunLogging: 0
   EnableSupportLogger: 0
   RunInBackground: 1
   StartInOfflineMode: 0
   RpcList:
+  - CantHearYou
+  - ChangeColour
   - ClickRpc
   - DestroyRpc
+  - HeresWhy
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
   - Revive
-  - SyncDownStateRPC
-  - TakeDamageRPC
   - SetPlayerColor
-  - UpdateZoneMaterial
-  - SyncProgressAndColor
   - ShowEndGameUI
+  - SyncDownStateRPC
+  - SyncProgressAndColor
+  - TakeDamageRPC
+  - UpdateZoneMaterial
+  - StartGameScene
+  - SetStartTime
+  - SetGoTime
+  - PlayerReady
+  - StartCountdown
+  - StartCountdownRPC
+  - StartGameRPC
   DisableAutoOpenWizard: 1
-  ShowSettings: 0
+  ShowSettings: 1
   DevRegionSetOnce: 1

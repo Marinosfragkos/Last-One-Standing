@@ -11,10 +11,10 @@ public class SecondLoadingScreen : MonoBehaviourPunCallbacks
     public string gameplayScene = "GameScene";
     void Start()
     {
-        if (PhotonNetwork.IsMasterClient)
-        {
+        
+        
             StartCoroutine(FakeLoadingAndLoadScene());
-        }
+        
     }
 
     IEnumerator FakeLoadingAndLoadScene()

@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviourPun
     private IEnumerator CleanAndLoadLobby()
     {
         // 🔹 Καθαρίζουμε όλους τους παίκτες και αντικείμενα Photon
-        PhotonView[] allPVs = FindObjectsOfType<PhotonView>();
+        PhotonView[] allPVs = Object.FindObjectsByType<PhotonView>(FindObjectsSortMode.None);
         foreach (var pv in allPVs)
         {
             if (pv.IsMine || PhotonNetwork.IsMasterClient)
@@ -38,20 +38,21 @@ public class GameManager : MonoBehaviourPun
         }
 
         // 🔹 Καθαρίζουμε UI elements που δεν είναι PhotonViews
-        Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+        Canvas[] allCanvases = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         foreach (var c in allCanvases)
         {
             Destroy(c.gameObject);
         }
 
-        TextMeshProUGUI[] allTexts = FindObjectsOfType<TextMeshProUGUI>();
+       TextMeshProUGUI[] allTexts = Object.FindObjectsByType<TextMeshProUGUI>(FindObjectsSortMode.None);
+
         foreach (var t in allTexts)
         {
             Destroy(t.gameObject);
         }
 
         // 🔹 Καθαρίζουμε zones (αν είναι απλά GameObjects)
-        ZoneTrigger[] allZones = FindObjectsOfType<ZoneTrigger>();
+       ZoneTrigger[] allZones = Object.FindObjectsByType<ZoneTrigger>(FindObjectsSortMode.None);
         foreach (var z in allZones)
         {
             Destroy(z.gameObject);
