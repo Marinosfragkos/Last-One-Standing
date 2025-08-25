@@ -40,7 +40,7 @@ public class ZoneSequenceManager : MonoBehaviourPun
         StartCoroutine(ActivateZonesSequentially());
     }
 
-    private IEnumerator ActivateZonesSequentially()
+private IEnumerator ActivateZonesSequentially()
 {
     for (int i = 0; i < zones.Length; i++)
     {
@@ -49,7 +49,7 @@ public class ZoneSequenceManager : MonoBehaviourPun
         {
             bool blueWon = blueScore > redScore;
             photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
-            yield break; // Τερματισμός coroutine πριν ενεργοποιηθεί η τρέχουσα ζώνη
+            yield break;
         }
 
         ZoneTrigger currentZone = zones[i];
@@ -75,6 +75,10 @@ public class ZoneSequenceManager : MonoBehaviourPun
             yield return new WaitForSeconds(1f);
         }
 
+        // Καθαρίζουμε το countdown πριν ενεργοποιηθεί η ζώνη
+        if (countdownText != null)
+            countdownText.text = "";
+
         // Ήχος τέλους αντίστροφης μέτρησης
         if (audioSource != null)
         {
@@ -88,7 +92,8 @@ public class ZoneSequenceManager : MonoBehaviourPun
 
         currentZone.ResetZone();
         currentZone.SetActive(true);
-        //χρονος για την ολοκλήρωση της βάσης
+
+        // Χρόνος για την ολοκλήρωση της βάσης
         float zoneTime = 10f;
         float timer = 0f;
         bool pointAwarded = false;
@@ -96,52 +101,58 @@ public class ZoneSequenceManager : MonoBehaviourPun
         while (!currentZone.IsComplete && timer < zoneTime)
         {
             timer += Time.deltaTime;
-            float timeLeft = zoneTime - timer;
+            float timeLeft = Mathf.Max(zoneTime - timer, 0f); // ποτέ αρνητικό
 
             int minutes = Mathf.FloorToInt(timeLeft / 60f);
             int seconds = Mathf.FloorToInt(timeLeft % 60f);
-            countdownText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            if (countdownText != null)
+                countdownText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 
             yield return null;
         }
 
+        // Καθαρίζουμε το countdown μετά τη λήξη
+        if (countdownText != null)
+            countdownText.text = "";
+
         // Απονομή πόντου στη βάση
-        // Απονομή πόντου στη βάση
-if (!pointAwarded)
-{
-    if (currentZone.blueProgress >= 100f)
-        blueScore++;
-    else if (currentZone.redProgress >= 100f)
-        redScore++;
-    else
-    {
-        if (currentZone.blueProgress > currentZone.redProgress)
-            blueScore++;
-        else if (currentZone.redProgress > currentZone.blueProgress)
-            redScore++;
-    }
-}
+        if (!pointAwarded)
+        {
+            if (currentZone.blueProgress >= 100f)
+                blueScore++;
+            else if (currentZone.redProgress >= 100f)
+                redScore++;
+            else
+            {
+                if (currentZone.blueProgress > currentZone.redProgress)
+                    blueScore++;
+                else if (currentZone.redProgress > currentZone.blueProgress)
+                    redScore++;
+            }
+        }
 
-blueScoreText.text = blueScore.ToString();
-redScoreText.text = redScore.ToString();
+        blueScoreText.text = blueScore.ToString();
+        redScoreText.text = redScore.ToString();
 
-// 🔹 Έλεγχος μετά την απονομή
-if (blueScore >= 2 || redScore >= 2)
-{
-    bool blueWon = blueScore > redScore;
-    photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
-    yield break;
-}
-
+        // Έλεγχος μετά την απονομή
+        if (blueScore >= 2 || redScore >= 2)
+        {
+            bool blueWon = blueScore > redScore;
+            photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
+            yield break;
+        }
 
         currentZone.SetActive(false);
 
         if (i + 1 < zones.Length)
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(10f); // αναμονή πριν την επόμενη ζώνη
     }
 
-    countdownText.text = "00:00";
+    // Τελικά καθαρίζουμε το countdown
+    if (countdownText != null)
+        countdownText.text = "";
 }
+
 
 
     [PunRPC]

@@ -81,7 +81,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
 
     void JoinOrCreateMainRoom()
     {
-        RoomOptions options = new RoomOptions { MaxPlayers = 1};
+        RoomOptions options = new RoomOptions { MaxPlayers = 2};
         PhotonNetwork.JoinOrCreateRoom(roomName, options, TypedLobby.Default);
     }
 
@@ -108,7 +108,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
 
     void CheckStartGame()
     {
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 1 && PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2 && PhotonNetwork.IsMasterClient)
         {
             Debug.Log("All players ready, loading SecondLoadingScene...");
             PhotonNetwork.LoadLevel("SecondLoadingScene");

@@ -71,6 +71,8 @@ public class CustomResolutionSelector : MonoBehaviour
         {
             scaler.referenceResolution = new Vector2(res.width, res.height);
         }
+        if (FullScreenOnButton != null) FullScreenOnButton.gameObject.SetActive(!IsFullScreen);
+        if (FullScreenOffButton != null) FullScreenOffButton.gameObject.SetActive(IsFullScreen);
     }
 
     public void SetFullScreenOn()

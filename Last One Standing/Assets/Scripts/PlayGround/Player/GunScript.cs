@@ -370,7 +370,7 @@ public class GunScript : MonoBehaviour
             float reloadTime = 1f;
             while (reloadTime > 0f)
             {
-                reloadingText.text = $"Reloading... {reloadTime:F1}s";
+                reloadingText.text = $"Reloading...\n{reloadTime:F1}s";
                 reloadTime -= Time.deltaTime;
                 yield return null;
             }
