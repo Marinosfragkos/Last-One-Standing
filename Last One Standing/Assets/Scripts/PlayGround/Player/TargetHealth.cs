@@ -184,8 +184,6 @@ public class TargetHealth : MonoBehaviour
 */
 
 
-
-
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -206,6 +204,7 @@ public class TargetHealth : MonoBehaviourPun
 
     private Coroutine reviveCoroutine;
     private Vector3 lastPosition;
+    private bool isTakingDamage = false;
 
     void Start()
     {
@@ -231,6 +230,12 @@ public class TargetHealth : MonoBehaviourPun
     {
         if (!photonView.IsMine) return;
 
+        // Test damage με το V
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            TakeDamage(10f); 
+        }
+
         if (isDown)
         {
             if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
@@ -252,6 +257,12 @@ public class TargetHealth : MonoBehaviourPun
         }
     }
 
+    // Καλείται τοπικά και στέλνει RPC
+    public void TakeDamage(float amount)
+    {
+        photonView.RPC("TakeDamageRPC", RpcTarget.All, amount);
+    }
+
     [PunRPC]
     public void TakeDamageRPC(float amount)
     {
@@ -266,6 +277,13 @@ public class TargetHealth : MonoBehaviourPun
         {
             EnterDownState();
             photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
+        }
+
+        // Ξεκινάει αναγέννηση αν δεν είναι down
+        if (!isDown)
+        {
+            StopCoroutine("RegenerateHealth");
+            StartCoroutine(RegenerateHealth());
         }
     }
 
@@ -311,21 +329,47 @@ public class TargetHealth : MonoBehaviourPun
             reviveText.gameObject.SetActive(false);
 
         reviveCoroutine = null;
-        photonView.RPC("ReviveRPC", RpcTarget.All);
+        Revive(); 
+    }
+
+    IEnumerator RegenerateHealth()
+    {
+        yield return new WaitForSeconds(3f);
+        isTakingDamage = false;
+
+        while (currentHealth < maxHealth && !isTakingDamage && !isDown)
+        {
+            currentHealth += 2f; 
+            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+            UpdateHealthUI();
+
+            yield return new WaitForSeconds(3f); 
+        }
+    }
+
+    // Wrapper για να καλέσεις την RPC
+    public void Revive(bool fullRevive = false)
+    {
+        photonView.RPC("ReviveRPC", RpcTarget.All, fullRevive);
     }
 
     [PunRPC]
-    public void Revive(bool fullRevive = false)
+    public void ReviveRPC(bool fullRevive)
     {
         isDown = false;
         currentHealth = fullRevive ? maxHealth : 30f;
         UpdateHealthUI();
 
-        // Ενημέρωση όπλου
+        // Reset όπλου αν υπάρχει
         GunScript gun = GetComponent<GunScript>();
         if (gun != null && fullRevive)
         {
             gun.ResetAmmo();
         }
+
+        // Ξεκινάει αναγέννηση υγείας
+        StopCoroutine("RegenerateHealth");
+        StartCoroutine(RegenerateHealth());
     }
 }

@@ -235,7 +235,6 @@ using TMPro;
 using Photon.Pun;
 using System.Collections;
 
-
 public class GunScript : MonoBehaviour
 {
     public AudioSource audioSource;
@@ -284,10 +283,31 @@ public class GunScript : MonoBehaviour
 
     void Update()
     {
-        if (SettingsUI.isSettingsOpen || isReloading) return;
+        // ===========================
+        // 1) Έλεγχος Settings
+        // ===========================
+        if (SettingsUI.isSettingsOpen)
+        {
+            // Σταματάει ο ήχος πυροβολισμού αν παίζει
+            if (isShootingSoundPlaying && audioSource != null && audioSource.isPlaying)
+            {
+                if (fadeCoroutine != null)
+                    StopCoroutine(fadeCoroutine);
+
+                fadeCoroutine = StartCoroutine(FadeOutShootingSound());
+            }
+            return; // μπλοκάρουμε όλο το Update
+        }
+
+        // ===========================
+        // 2) Έλεγχος reload / player down
+        // ===========================
+        if (isReloading) return;
         if (health != null && (health.currentHealth <= 0f || IsPlayerDown())) return;
 
-        // Shooting
+        // ===========================
+        // 3) Shooting
+        // ===========================
         bool canShoot = Input.GetButton("Fire1") && Time.time >= nextTimeToFire && currentAmmo > 0;
 
         if (canShoot)
@@ -316,6 +336,9 @@ public class GunScript : MonoBehaviour
             fadeCoroutine = StartCoroutine(FadeOutShootingSound());
         }
 
+        // ===========================
+        // 4) Reload
+        // ===========================
         if (Input.GetKeyDown(KeyCode.R) && !isReloading)
         {
             StartCoroutine(ReloadCoroutine());
@@ -339,7 +362,6 @@ public class GunScript : MonoBehaviour
 
             if (target != null && targetTeam != null && playerTeam != null)
             {
-                // Έλεγχος ομάδας
                 if (targetTeam.team != playerTeam.team)
                 {
                     target.photonView.RPC("TakeDamageRPC", RpcTarget.All, damage);
@@ -358,6 +380,7 @@ public class GunScript : MonoBehaviour
         {
             if (fadeCoroutine != null)
                 StopCoroutine(fadeCoroutine);
+
             fadeCoroutine = StartCoroutine(FadeOutShootingSound());
         }
 

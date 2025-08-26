@@ -4,13 +4,28 @@ using UnityEngine.UI;
 
 public class AudioToggle : MonoBehaviour
 {
+    public static AudioToggle instance; // Singleton instance
+
     public AudioMixer audioMixer;
 
-    public GameObject onButton;  // Δείχνει "On" όταν είναι mute (για να ενεργοποιήσεις τον ήχο)
-    public GameObject offButton; // Δείχνει "Off" όταν ο ήχος είναι ενεργός (για να τον απενεργοποιήσεις)
+    public GameObject onButton;  // Δείχνει "On" όταν είναι mute
+    public GameObject offButton; // Δείχνει "Off" όταν ο ήχος είναι ενεργός
 
     private const string VolumeParam = "MasterVolume";
     private const string MuteKey = "AudioMuted";
+
+    void Awake()
+    {
+        // Singleton pattern
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject); // Αν υπάρχει ήδη ένα instance, καταστρέφουμε αυτό
+            return;
+        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject); // Δεν καταστρέφεται σε νέα σκηνή
+    }
 
     void Start()
     {
@@ -37,8 +52,7 @@ public class AudioToggle : MonoBehaviour
 
     private void UpdateButtons(bool isMuted)
     {
-        // Αν είναι mute, δείχνουμε το ON button για να επανενεργοποιήσει ο χρήστης τον ήχο
-        onButton.SetActive(isMuted);
-        offButton.SetActive(!isMuted);
+        if(onButton != null) onButton.SetActive(isMuted);
+        if(offButton != null) offButton.SetActive(!isMuted);
     }
 }

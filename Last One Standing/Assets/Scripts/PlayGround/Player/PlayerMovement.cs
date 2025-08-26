@@ -31,6 +31,9 @@ public class PlayerMovement : MonoBehaviourPun
     public TMP_Text deathCountdownText;
     public Image downedImage;
 
+    public static bool isSettingsOpen = false;
+
+
     /*void Awake()
 {
     photonView = GetComponent<PhotonView>();
@@ -79,6 +82,7 @@ public class PlayerMovement : MonoBehaviourPun
 
     void Update()
     {
+         if (!photonView.IsMine) return;
         if (photonView.IsMine)
         {
             Debug.Log("Controlling LOCAL player: " + PhotonNetwork.LocalPlayer.NickName);
@@ -100,9 +104,11 @@ public class PlayerMovement : MonoBehaviourPun
 
             return;
         }
-
+        if (!isFinalDead && !SettingsUI.isSettingsOpen)
+    {
         float mouseX = Input.GetAxis("Mouse X") * 20f;
         transform.Rotate(0f, mouseX, 0f);
+    }
 
         bool isDown = health != null && health.currentHealth <= 0;
 

@@ -3,29 +3,41 @@ using UnityEngine.UI;
 
 public class OpenCanvasOnButtonClick : MonoBehaviour
 {
-    public Canvas targetCanvas; // Το Canvas που θέλουμε να ανοίξουμε
-    public Button button; // Το κουμπί που θα πατηθεί για να ανοίξει το Canvas
-    public Button buttonInsideCanvas; // Το κουμπί μέσα στο Canvas (π.χ. Done)
+    public Canvas targetCanvas;           // Το Canvas που θέλουμε να ανοίξουμε
+    public Button button;                 // Το κουμπί που θα πατηθεί για να ανοίξει το Canvas
+    public Button buttonInsideCanvas;     // Το κουμπί μέσα στο Canvas (π.χ. Done)
 
     void Start()
     {
-        targetCanvas.gameObject.SetActive(false); // Κρύβουμε αρχικά το canvas
-        button.onClick.AddListener(OpenCanvas);   // Όταν πατιέται το κουμπί, ανοίγουμε το canvas
-        buttonInsideCanvas.onClick.AddListener(CloseCanvas); // Όταν πατηθεί Done, κλείνουμε
+        // Κρύβουμε αρχικά το canvas
+        if (targetCanvas != null)
+            targetCanvas.gameObject.SetActive(false);
+
+        // Ορίζουμε listeners για τα κουμπιά
+        if (button != null)
+            button.onClick.AddListener(OpenCanvas);
+
+        if (buttonInsideCanvas != null)
+            buttonInsideCanvas.onClick.AddListener(CloseCanvas);
     }
 
     public void OpenCanvas()
-{
-    targetCanvas.gameObject.SetActive(true);
-    SettingsUI.isSettingsOpen = true;
-    CamFollow.isCameraLocked = true; // 
-}
+    {
+        if (targetCanvas != null)
+            targetCanvas.gameObject.SetActive(true);
 
-public void CloseCanvas()
-{
-    targetCanvas.gameObject.SetActive(false);
-    SettingsUI.isSettingsOpen = false;
-    CamFollow.isCameraLocked = false; // 
-}
+        // Παγώνει την κάμερα/rotation του παίκτη
+        //PlayerMovement.isSettingsOpen = true;
+        SettingsUI.isSettingsOpen = true; // Ενημερώνει όλα τα scripts
+    }
 
+    public void CloseCanvas()
+    {
+        if (targetCanvas != null)
+            targetCanvas.gameObject.SetActive(false);
+
+        // Ξαναενεργοποιεί την κάμερα/rotation του παίκτη
+        // PlayerMovement.isSettingsOpen = false;
+       SettingsUI.isSettingsOpen = false;
+    }
 }

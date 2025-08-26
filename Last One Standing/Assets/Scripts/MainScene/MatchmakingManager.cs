@@ -85,6 +85,7 @@ public class MatchmakingManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinOrCreateRoom(roomName, options, TypedLobby.Default);
     }
 
+    
     public override void OnConnectedToMaster()
     {
         Debug.Log("Connected to Master Server.");
