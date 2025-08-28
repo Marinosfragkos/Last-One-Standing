@@ -22,7 +22,7 @@ public class PlayerSetup : MonoBehaviourPun
     }
 
     // ----------------------- TEAM SETUP -----------------------
-    myTeam = (photonView.Owner.ActorNumber == 1) ? Team.Blue : Team.Red;
+    myTeam = (photonView.Owner.ActorNumber <= 1) ? Team.Blue : Team.Red;
 
     ExitGames.Client.Photon.Hashtable ht = new ExitGames.Client.Photon.Hashtable();
     ht["Team"] = (int)myTeam;
