@@ -610,22 +610,62 @@ private void UpdateControllingTeam()
     }
 
     public void SetActive(bool state)
-    {
-        isActive = state;
+{
+    isActive = state;
 
-        if (state)
+    if (state)
+    {
+        UpdateBaseNameUI();
+        EnableCubes();
+
+        // Καθαρίζουμε τυχόν παλιά δεδομένα
+        bluePlayersInside.Clear();
+        redPlayersInside.Clear();
+
+        // Παίρνουμε τον collider της ζώνης
+        Collider col = GetComponent<Collider>();
+        if (col != null)
         {
-            UpdateBaseNameUI();
-            EnableCubes();
-        }
-        else
-        {
-            DisableCubes();
-            bluePlayersInside.Clear();
-            redPlayersInside.Clear();
-            lastTeam = "neutral";
+            // Βρίσκουμε όλα τα colliders που είναι ήδη μέσα
+            Collider[] hits = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
+            foreach (Collider hit in hits)
+            {
+                if (hit.CompareTag("Player"))
+                {
+                    var setup = hit.GetComponent<PlayerSetup>();
+                    if (setup == null) setup = hit.GetComponentInParent<PlayerSetup>();
+                    if (setup == null) continue;
+
+                    int actorId = setup.photonView.Owner.ActorNumber;
+
+                    // Βρίσκουμε ομάδα από custom properties
+                    PlayerSetup.Team team = setup.myTeam;
+                    object teamObj;
+                    if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
+                        team = (PlayerSetup.Team)teamObj;
+
+                    if (team == PlayerSetup.Team.Blue)
+                        bluePlayersInside.Add(actorId);
+                    else if (team == PlayerSetup.Team.Red)
+                        redPlayersInside.Add(actorId);
+
+                    Debug.Log($"[ZoneTrigger] Player {actorId} already inside zone on activation. Team: {team}");
+                }
+            }
+
+            // Ενημερώνουμε άμεσα το controlling team
+            UpdateControllingTeam();
         }
     }
+    else
+    {
+        DisableCubes();
+        bluePlayersInside.Clear();
+        redPlayersInside.Clear();
+        lastTeam = "neutral";
+    }
+}
+
 
     public void EnableCubes()
     {

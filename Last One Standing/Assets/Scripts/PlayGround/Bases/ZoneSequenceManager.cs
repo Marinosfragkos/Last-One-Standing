@@ -94,7 +94,7 @@ private IEnumerator ActivateZonesSequentially()
         currentZone.SetActive(true);
 
         // Χρόνος για την ολοκλήρωση της βάσης
-        float zoneTime = 10f;
+        float zoneTime = 30f;
         float timer = 0f;
         bool pointAwarded = false;
 
