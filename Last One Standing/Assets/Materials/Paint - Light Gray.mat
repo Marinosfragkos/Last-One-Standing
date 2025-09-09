@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Paint - Light Gray
   m_Shader: {fileID: 4800000, guid: 6e4ae4064600d784cac1e41a9e6f2e59, type: 3}
-  m_Parent: {fileID: 2100000, guid: 40bf0d5042e734e7d9e6367780ce1869, type: 2}
+  m_Parent: {fileID: 2100000, guid: 4c3fab845d7004fb4a726eddd239bc11, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _DISABLE_SSR_TRANSPARENT
