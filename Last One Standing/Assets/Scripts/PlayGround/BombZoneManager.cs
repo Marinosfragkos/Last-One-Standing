@@ -1,51 +1,56 @@
 using UnityEngine;
 using Photon.Pun;
 using System.Collections;
+using System.Collections.Generic;
 
 public class BombZoneManager : MonoBehaviourPun
 {
-    public GameObject[] bombZonePrefabs; // τα 4 prefabs σου
-    public float spawnInterval = 150;   // κάθε πόσα δευτερόλεπτα
+    [Header("Bomb Settings")]
+    public GameObject bombPrefab;       // Prefab της βόμβας (πρέπει να έχει Renderer & PhotonView)
+    public Transform[] spawnPoints;     // 4 spawn points στο inspector
+    public float spawnInterval = 30f;   // Κάθε 30 δευτερόλεπτα
+    public float bombLifeTime = 6f;     // Η βόμβα μένει ενεργή 8 δευτερόλεπτα
+
+    private List<Transform> availablePoints;
 
     private void Start()
     {
-        if (PhotonNetwork.IsMasterClient) // μόνο ο MasterClient κάνει spawn
+        if (PhotonNetwork.IsMasterClient) // Μόνο ο Master κάνει spawn
         {
-            StartCoroutine(SpawnZonesRoutine());
+            availablePoints = new List<Transform>(spawnPoints);
+            StartCoroutine(SpawnRoutine());
         }
     }
 
-    private IEnumerator SpawnZonesRoutine()
+    private IEnumerator SpawnRoutine()
     {
-        while (true)
+        while (availablePoints.Count > 0)
         {
             yield return new WaitForSeconds(spawnInterval);
 
-            SpawnRandomZone();
+            // Διάλεξε τυχαίο spawn point από τη λίστα
+            int randomIndex = Random.Range(0, availablePoints.Count);
+            Transform spawnPoint = availablePoints[randomIndex];
+
+            // Κάνε instantiate τη βόμβα για όλους τους παίκτες
+            GameObject bomb = PhotonNetwork.InstantiateRoomObject(
+                bombPrefab.name,
+                spawnPoint.position,
+                Quaternion.identity
+            );
+
+            // Αφαίρεσε το spawn point από τη λίστα για να μην ξαναχρησιμοποιηθεί
+            availablePoints.RemoveAt(randomIndex);
+
+            // Περίμενε bombLifeTime και μετά καταστρέψε τη βόμβα
+            yield return new WaitForSeconds(bombLifeTime);
+
+            if (bomb != null && bomb.GetComponent<PhotonView>() != null)
+            {
+                PhotonNetwork.Destroy(bomb);
+            }
         }
-    }
 
-    private void SpawnRandomZone()
-    {
-        if (bombZonePrefabs.Length == 0) return;
-
-        // Διάλεξε τυχαίο prefab
-        int index = Random.Range(0, bombZonePrefabs.Length);
-
-        // Θέση spawn – μπορείς να βάλεις δικές σου συντεταγμένες ή random
-        Vector3 spawnPos = GetRandomPosition();
-
-        // Spawn μέσω Photon
-        PhotonNetwork.InstantiateRoomObject(bombZonePrefabs[index].name, spawnPos, Quaternion.identity);
-    }
-
-    private Vector3 GetRandomPosition()
-    {
-        // Βάλε τα δικά σου όρια χάρτη εδώ
-        float x = Random.Range(-20f, 20f);
-        float z = Random.Range(-20f, 20f);
-        float y = 0f; // έδαφος
-
-        return new Vector3(x, y, z);
+        Debug.Log("✅ Όλα τα spawn points χρησιμοποιήθηκαν!");
     }
 }
