@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - GameManager
+  - Interactable
+  - Ammo
+  - AmmoHealthTrigger
   layers:
   - Default
   - TransparentFX

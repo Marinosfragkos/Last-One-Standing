@@ -260,11 +260,17 @@ public class GunScript : MonoBehaviour
 
     private TargetHealth health;
     private PlayerTeam playerTeam;
+    public GameObject ammoUI;
+    private bool canUseZ = true; // flag για cooldown
+    public float zCooldown = 10f; // δευτερόλεπτα
+    public static double globalZCooldownEndTime = 0f; // PhotonNetwork.Time-based
 
     private Coroutine fadeCoroutine;
     private bool isShootingSoundPlaying = false;
     private bool isReloading = false;
     private float defaultVolume;
+    private bool isInsidePanel = false; // ✅ αν ο παίκτης είναι μέσα στο panel
+   
 
     void Start()
     {
@@ -343,6 +349,26 @@ public class GunScript : MonoBehaviour
         {
             StartCoroutine(ReloadCoroutine());
         }
+        // ===========================
+        // 5) Ammo Panel
+        // ===========================
+        PhotonView pv = GetComponent<PhotonView>();
+    if (pv != null && !pv.IsMine)
+        return;
+
+         if (isInsidePanel && Input.GetKeyDown(KeyCode.Z))
+    {
+       double now = PhotonNetwork.Time;
+    if (now >= globalZCooldownEndTime)
+    {
+        reserveAmmo += 90;
+        UpdateAmmoUI();
+        Debug.Log($"💥 Δόθηκαν 90 σφαίρες στον {PhotonNetwork.LocalPlayer.ActorNumber}! Νέο reserveAmmo: {reserveAmmo}");
+
+        // Στέλνουμε RPC σε όλους για να κλείσει το ammoUI και να ξεκινήσει το global cooldown
+        pv.RPC("StartGlobalZCooldownRPC", RpcTarget.All);
+        }
+    }
     }
 
     void Shoot()
@@ -413,8 +439,11 @@ public class GunScript : MonoBehaviour
         isReloading = false;
     }
 
-    void UpdateAmmoUI()
+    public void UpdateAmmoUI()
     {
+        PhotonView pv = GetComponent<PhotonView>();
+    if (pv != null && !pv.IsMine)
+        return;
         if (ammoText != null)
             ammoText.text = $"{currentAmmo} / {reserveAmmo}";
     }
@@ -448,4 +477,76 @@ public class GunScript : MonoBehaviour
     {
         return health != null && health.GetType().GetField("isDown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(health) is bool b && b;
     }
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Ammo")) // βάζεις το tag στο panel
+        {
+            SetInsidePanel(true);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Ammo"))
+        {
+             SetInsidePanel(false);
+        }
+    }
+
+    // GunScript.cs
+ public void SetInsidePanel(bool state, int actor = -1)
+{
+    PhotonView pv = GetComponent<PhotonView>();
+    if (pv != null && !pv.IsMine)
+        return;
+
+    isInsidePanel = state;
+
+    // Αν το Z είναι σε cooldown, δεν ανοίγουμε το ammoUI
+    double now = PhotonNetwork.Time;
+    bool isGlobalCooldown = now < globalZCooldownEndTime;
+
+    if (!isGlobalCooldown)
+    {
+        // Ενημερώνουμε το UI μόνο αν δεν είναι σε cooldown
+        if (ammoUI != null)
+            ammoUI.SetActive(state);
+    }
+    else
+    {
+        // Αν είναι σε cooldown, αφήνουμε το UI κλειστό
+        if (ammoUI != null)
+            ammoUI.SetActive(false);
+    }
+
+    Debug.Log($"{(state ? "Entered" : "Exited")} Ammo Panel for actor {actor}");
+}
+
+
+[PunRPC]
+private void StartGlobalZCooldownRPC()
+{
+    double now = PhotonNetwork.Time;
+    globalZCooldownEndTime = now + zCooldown;
+
+    // Κλείνουμε το ammoUI για όλους
+    if (ammoUI != null)
+        ammoUI.SetActive(false);
+
+    // Ξεκινάμε coroutine για επανενεργοποίηση μετά το τέλος του cooldown
+    StartCoroutine(GlobalZUICheck());
+}
+
+private IEnumerator GlobalZUICheck()
+{
+    while (PhotonNetwork.Time < globalZCooldownEndTime)
+        yield return null;
+
+    // Επανενεργοποίηση UI μόνο αν ο παίκτης είναι μέσα στο panel
+    if (isInsidePanel && ammoUI != null)
+        ammoUI.SetActive(true);
+}
+
 }
