@@ -1,15 +1,16 @@
+
 using UnityEngine;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
-using Photon.Pun;  // Photon namespace
+using Photon.Pun;
 
-
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
 public class PlayerMovement : MonoBehaviourPun
 {
     public float moveSpeed = 3f;
-  //  private PhotonView photonView;
-    private CharacterController controller;
+    private Rigidbody rb;
     private Animator animator;
     private TargetHealth health;
 
@@ -22,9 +23,6 @@ public class PlayerMovement : MonoBehaviourPun
     private Vector3 spawnPosition;
     private Quaternion spawnRotation;
 
-    private float originalHeight;
-    private Vector3 originalCenter;
-
     private bool isReviving = false;
     private bool isFinalDead = false;
 
@@ -32,34 +30,29 @@ public class PlayerMovement : MonoBehaviourPun
     public Image downedImage;
 
     public static bool isSettingsOpen = false;
-
-
-    /*void Awake()
-{
-    photonView = GetComponent<PhotonView>();
-}*/
+    public Transform fpsCam;
+    private float pitch = 0f;
 
     void Start()
     {
-         if (!photonView.IsMine)
+        if (!photonView.IsMine)
         {
-            // Disable audio, UI, input on remote players
+            // Disable local-only components on remote players
             if (footstepSource != null) footstepSource.enabled = false;
             if (crawlAudioSource != null) crawlAudioSource.enabled = false;
             if (deathCountdownText != null) deathCountdownText.enabled = false;
             if (downedImage != null) downedImage.enabled = false;
-            return; // Do not initialize further if not local player
+            return;
         }
 
-        controller = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+
         animator = GetComponentInChildren<Animator>();
         health = GetComponent<TargetHealth>();
 
         spawnPosition = transform.position;
         spawnRotation = transform.rotation;
-
-        originalHeight = controller.height;
-        originalCenter = controller.center;
 
         if (footstepSource != null)
         {
@@ -82,157 +75,110 @@ public class PlayerMovement : MonoBehaviourPun
 
     void Update()
     {
-         if (!photonView.IsMine) return;
-        if (photonView.IsMine)
-        {
-            Debug.Log("Controlling LOCAL player: " + PhotonNetwork.LocalPlayer.NickName);
-        }
-        else
-        {
-            Debug.Log("REMOTE player: " + photonView.Owner.NickName);
-        }
-
         if (!photonView.IsMine) return;
-      //  Debug.Log("Ελέγχω τον παίκτη μου: " + PhotonNetwork.LocalPlayer.NickName);
 
-        if (isFinalDead)
+        if (isFinalDead) StopAllMovementAudio();
+
+        if (isFinalDead || isSettingsOpen) return;
+
+        RotatePlayer();
+
+        if (health != null && health.currentHealth <= 0)
         {
-            if (footstepSource != null && footstepSource.isPlaying)
-                footstepSource.Stop();
-            if (crawlAudioSource != null && crawlAudioSource.isPlaying)
-                crawlAudioSource.Stop();
-
+            HandleCrawlMovement();
             return;
         }
-        if (!isFinalDead && !SettingsUI.isSettingsOpen)
-    {
-        float mouseX = Input.GetAxis("Mouse X") * 20f;
-        transform.Rotate(0f, mouseX, 0f);
+
+        HandleNormalMovement();
     }
 
-        bool isDown = health != null && health.currentHealth <= 0;
+    private void RotatePlayer()
+    {
+          float mouseY = Input.GetAxis("Mouse Y") * 2f;
+      // Πάνω - Κάτω με clamp
+        pitch -= mouseY;
+    pitch = Mathf.Clamp(pitch, -45f, 45f); // όριο κλίσης
+    transform.localRotation = Quaternion.Euler(pitch, transform.localEulerAngles.y, 0f);
 
-        if (isDown)
-        {
-            Vector3 move = Vector3.zero;
-            bool isMoving = false;
+    // Για αριστερά-δεξιά, περιστρέφουμε μόνο τον παίκτη
+    float mouseX = Input.GetAxis("Mouse X") * 20f;
+    transform.Rotate(0f, mouseX, 0f);
+    }
 
-            if (Input.GetKey(KeyCode.W)) {
-                ResetAllTriggers();
-                move += transform.forward;
-                animator.SetTrigger("Crawl");
-                isMoving = true;
-            }
-            else if (Input.GetKey(KeyCode.S)) {
-                ResetAllTriggers();
-                move -= transform.forward;
-                animator.SetTrigger("Crawl");
-                isMoving = true;
-            }
-            else {
-                ResetAllTriggers();
-                animator.SetTrigger("CrawlIdle");
-            }
-
-            if (Input.GetKeyDown(KeyCode.V) && !isReviving)
-            {
-                isFinalDead = true;
-
-                controller.height = originalHeight;
-                controller.center = originalCenter;
-
-                ResetAllTriggers();
-                animator.SetTrigger("FinalDeath");
-
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out hit, 10f))
-                {
-                    transform.position = hit.point;
-                }
-
-                StartCoroutine(ReviveAfterDeath());
-                return;
-            }
-
-            if (crawlAudioSource != null)
-            {
-                if (isMoving && !crawlAudioSource.isPlaying)
-                {
-                    crawlAudioSource.Play();
-                    move = Vector3.zero;
-                    ResetAllTriggers();
-                    animator.SetTrigger("CrawlIdle");
-                    isMoving = false;
-                }
-                else if (!isMoving && crawlAudioSource.isPlaying)
-                {
-                    crawlAudioSource.Stop();
-                }
-            }
-
-            if (footstepSource != null && footstepSource.isPlaying)
-                footstepSource.Stop();
-
-            float crawlSpeed = moveSpeed * 0.6f;
-            controller.Move(move.normalized * crawlSpeed * Time.deltaTime);
-            return;
-        }
-
-        Vector3 moveNormal = Vector3.zero;
-        float currentSpeed = moveSpeed;
-        string trigger = "";
-        bool isMovingNormal = false;
+    private void HandleCrawlMovement()
+    {
+        Vector3 move = Vector3.zero;
+        bool isMoving = false;
 
         if (Input.GetKey(KeyCode.W))
         {
-            moveNormal += transform.forward;
-            trigger = "Forward";
-            isMovingNormal = true;
+            move += transform.forward;
+            animator.SetTrigger("Crawl");
+            isMoving = true;
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            moveNormal -= transform.forward;
-            currentSpeed *= 0.6f;
-            trigger = "Backward";
-            isMovingNormal = true;
+            move -= transform.forward;
+            animator.SetTrigger("Crawl");
+            isMoving = true;
         }
-        else if (Input.GetKey(KeyCode.A))
+        else
         {
-            moveNormal -= transform.right;
-            currentSpeed *= 0.8f;
-            trigger = "Left";
-            isMovingNormal = true;
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            moveNormal += transform.right;
-            currentSpeed *= 0.8f;
-            trigger = "Right";
-            isMovingNormal = true;
-        }
-        else if (!Input.anyKey)
-        {
-            trigger = "Idle";
+            animator.SetTrigger("CrawlIdle");
         }
 
-        if (!string.IsNullOrEmpty(trigger))
+        if (Input.GetKeyDown(KeyCode.V) && !isReviving)
         {
-            ResetAllTriggers();
-            animator.SetTrigger(trigger);
+            isFinalDead = true;
+            StartCoroutine(ReviveAfterDeath());
+            return;
         }
 
-        controller.Move(moveNormal.normalized * currentSpeed * Time.deltaTime);
+        PlayCrawlAudio(isMoving);
 
-        if (footstepSource != null)
-        {
-            if (isMovingNormal && !footstepSource.isPlaying)
-                footstepSource.Play();
-            else if (!isMovingNormal && footstepSource.isPlaying)
-                footstepSource.Stop();
-        }
+        rb.MovePosition(rb.position + move.normalized * moveSpeed * 0.6f * Time.deltaTime);
+        if (footstepSource != null && footstepSource.isPlaying) footstepSource.Stop();
+    }
 
-        if (crawlAudioSource != null && crawlAudioSource.isPlaying)
-            crawlAudioSource.Stop();
+    private void HandleNormalMovement()
+    {
+        Vector3 move = Vector3.zero;
+        float speedMultiplier = 1f;
+        bool isMoving = false;
+        string trigger = "Idle";
+
+        if (Input.GetKey(KeyCode.W)) { move += transform.forward; trigger = "Forward"; isMoving = true; }
+        else if (Input.GetKey(KeyCode.S)) { move -= transform.forward; trigger = "Backward"; speedMultiplier = 0.6f; isMoving = true; }
+        else if (Input.GetKey(KeyCode.A)) { move -= transform.right; speedMultiplier = 0.8f; trigger = "Left"; isMoving = true; }
+        else if (Input.GetKey(KeyCode.D)) { move += transform.right; speedMultiplier = 0.8f; trigger = "Right"; isMoving = true; }
+
+        ResetAllTriggers();
+        animator.SetTrigger(trigger);
+
+        rb.MovePosition(rb.position + move.normalized * moveSpeed * speedMultiplier * Time.deltaTime);
+
+        PlayFootstepAudio(isMoving);
+        if (crawlAudioSource != null && crawlAudioSource.isPlaying) crawlAudioSource.Stop();
+    }
+
+    private void PlayFootstepAudio(bool moving)
+    {
+        if (footstepSource == null) return;
+        if (moving && !footstepSource.isPlaying) footstepSource.Play();
+        else if (!moving && footstepSource.isPlaying) footstepSource.Stop();
+    }
+
+    private void PlayCrawlAudio(bool moving)
+    {
+        if (crawlAudioSource == null) return;
+        if (moving && !crawlAudioSource.isPlaying) crawlAudioSource.Play();
+        else if (!moving && crawlAudioSource.isPlaying) crawlAudioSource.Stop();
+    }
+
+    private void StopAllMovementAudio()
+    {
+        if (footstepSource != null && footstepSource.isPlaying) footstepSource.Stop();
+        if (crawlAudioSource != null && crawlAudioSource.isPlaying) crawlAudioSource.Stop();
     }
 
     void ResetAllTriggers()
@@ -257,51 +203,32 @@ public class PlayerMovement : MonoBehaviourPun
         yield return new WaitForSeconds(2f);
 
         animator.speed = 0f;
-
-        if (deathCountdownText != null)
-            deathCountdownText.gameObject.SetActive(true);
-
-        if (downedImage != null)
-            downedImage.gameObject.SetActive(true);
+        if (deathCountdownText != null) deathCountdownText.gameObject.SetActive(true);
+        if (downedImage != null) downedImage.gameObject.SetActive(true);
 
         float countdown = 5f;
         while (countdown > 0f)
         {
-            if (deathCountdownText != null)
-                deathCountdownText.text = $"Respawning in {Mathf.CeilToInt(countdown)}...";
+            if (deathCountdownText != null) deathCountdownText.text = $"Respawning in {Mathf.CeilToInt(countdown)}...";
             countdown -= Time.deltaTime;
             yield return null;
         }
 
-        if (deathCountdownText != null)
-            deathCountdownText.gameObject.SetActive(false);
-        if (downedImage != null)
-            downedImage.gameObject.SetActive(false);
+        if (deathCountdownText != null) deathCountdownText.gameObject.SetActive(false);
+        if (downedImage != null) downedImage.gameObject.SetActive(false);
 
         animator.speed = 1f;
         isFinalDead = false;
         health.Revive(true);
 
-        controller.enabled = false;
-        transform.position = spawnPosition;
-        transform.rotation = spawnRotation;
-        controller.enabled = true;
-
-        controller.height = originalHeight;
-        controller.center = originalCenter;
+        rb.position = spawnPosition;
+        rb.rotation = spawnRotation;
 
         ResetAllTriggers();
         animator.SetTrigger("Idle");
 
-        if (crawlAudioSource != null && crawlAudioSource.isPlaying)
-            crawlAudioSource.Stop();
-
         isReviving = false;
     }
 
-    //ΧΡΗΣΙΜΟ ΓΙΑ ZoneTrigger
-    public bool IsFinalDead()
-    {
-        return isFinalDead;
-    }
+    public bool IsFinalDead() => isFinalDead;
 }

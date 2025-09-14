@@ -11,10 +11,11 @@ public class GameStarter : MonoBehaviourPun
     public AudioSource startSound;       // ήχος που παίζει συγχρονισμένα
 
     [Header("Settings")]
-    public int requiredPlayers = 2;    // αριθμός παικτών που πρέπει να μπουν
+    public int requiredPlayers = 1;    // αριθμός παικτών που πρέπει να μπουν
     public float bufferTime = 0.5f;      // buffer για να προλάβουν όλοι οι clients
 
     private bool countdownStarted = false;
+
 
     void Start()
     {

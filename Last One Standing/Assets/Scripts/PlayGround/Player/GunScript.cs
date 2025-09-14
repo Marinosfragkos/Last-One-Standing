@@ -1,235 +1,3 @@
-/*using UnityEngine;
-using TMPro;
-using System.Collections;
-
-public class GunScript : MonoBehaviour
-{
-    public AudioSource audioSource;
-    public AudioClip shootSound;
-    public AudioClip reloadSound;
-
-    public int maxAmmo = 30;
-    public int reserveAmmo = 90;
-    private int currentAmmo;
-
-    public float fireRate = 0.2f;
-    private float nextTimeToFire = 0f;
-
-    public float range = 10000f;
-    public float damage = 10f;
-
-    public Camera fpsCam;
-    public ParticleSystem muzzleFlash;
-    public GameObject hitEffectPrefab;
-
-    public TMP_Text ammoText;
-    public TMP_Text reloadingText;
-
-    private Coroutine fadeCoroutine;
-    private bool isShootingSoundPlaying = false;
-    private bool isReloading = false;
-    private float defaultVolume;
-
-    private TargetHealth health; // NEW
-
-    void Start()
-    {
-        currentAmmo = maxAmmo;
-        UpdateAmmoUI();
-
-        if (audioSource != null)
-            defaultVolume = audioSource.volume;
-
-        if (reloadingText != null)
-            reloadingText.gameObject.SetActive(false);
-
-        // Προσπαθούμε να βρούμε το TargetHealth του παίκτη
-        health = GetComponentInParent<TargetHealth>(); // NEW
-    }
-
-   void Update()
-{
-    // Αν είναι ανοιχτές οι ρυθμίσεις, σταματάμε τον ήχο και επιστρέφουμε
-    if (SettingsUI.isSettingsOpen)
-    {
-        if (isShootingSoundPlaying && audioSource.isPlaying)
-        {
-            audioSource.Stop();
-            isShootingSoundPlaying = false;
-        }
-        return;
-    }
-
-    if (isReloading)
-        return;
-
-    // NEW: Μπλοκάρουμε τα πάντα αν ο παίκτης είναι σε crawl
-    if ((health != null && health.currentHealth <= 0f) || (health != null && IsPlayerDown()))
-        return;
-
-    // Self-damage για debug
-    if (Input.GetKeyDown(KeyCode.V))
-    {
-        if (health != null)
-        {
-            health.TakeDamage(10f);
-            Debug.Log("Self damage 10 applied.");
-        }
-    }
-
-    // Shooting
-    bool canShoot = Input.GetButton("Fire1") && Time.time >= nextTimeToFire && currentAmmo > 0;
-
-    if (canShoot)
-    {
-        nextTimeToFire = Time.time + fireRate;
-        Shoot();
-
-        if (!isShootingSoundPlaying && audioSource != null && shootSound != null)
-        {
-            if (fadeCoroutine != null)
-                StopCoroutine(fadeCoroutine);
-
-            audioSource.clip = shootSound;
-            audioSource.loop = true;
-            audioSource.volume = defaultVolume;
-            audioSource.Play();
-            isShootingSoundPlaying = true;
-        }
-    }
-
-    if ((!Input.GetButton("Fire1") || currentAmmo <= 0) && isShootingSoundPlaying)
-    {
-        if (fadeCoroutine != null)
-            StopCoroutine(fadeCoroutine);
-
-        fadeCoroutine = StartCoroutine(FadeOutShootingSound());
-    }
-
-    if (Input.GetKeyDown(KeyCode.R) && !isReloading)
-    {
-        StartCoroutine(ReloadCoroutine());
-    }
-}
-
-
-void Shoot()
-{
-    muzzleFlash.Play();
-    currentAmmo--;
-    UpdateAmmoUI();
-
-    Ray ray = new Ray(fpsCam.transform.position, fpsCam.transform.forward);
-    RaycastHit hit;
-
-   int layerMask = ~0; // Χτυπάει όλα
-
-    if (Physics.Raycast(ray, out hit, range, layerMask))
-    {
-        Debug.Log("Hit: " + hit.transform.name);
-
-        GameObject hitEffect = Instantiate(hitEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
-        Destroy(hitEffect, 0.5f);
-
-        TargetHealth target = hit.transform.GetComponent<TargetHealth>();
-        if (target != null)
-        {
-            target.TakeDamage(damage);
-        }
-    }
-    else
-    {
-        Debug.Log("Nothing hit!");
-    }
-
-    Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 1f);
-}
-
-
-
-    IEnumerator ReloadCoroutine()
-    {
-        isReloading = true;
-
-        if (isShootingSoundPlaying)
-        {
-            if (fadeCoroutine != null)
-                StopCoroutine(fadeCoroutine);
-
-            fadeCoroutine = StartCoroutine(FadeOutShootingSound());
-        }
-
-        if (audioSource != null && reloadSound != null)
-        {
-            audioSource.PlayOneShot(reloadSound);
-        }
-
-        if (reloadingText != null)
-        {
-            reloadingText.gameObject.SetActive(true);
-            float reloadTime = 1f;
-            while (reloadTime > 0f)
-            {
-                reloadingText.text = $"Reloading... {reloadTime:F1}s";
-                reloadTime -= Time.deltaTime;
-                yield return null;
-            }
-            reloadingText.gameObject.SetActive(false);
-        }
-        else
-        {
-            yield return new WaitForSeconds(2f);
-        }
-
-        int bulletsNeeded = maxAmmo - currentAmmo;
-        int bulletsToReload = Mathf.Min(bulletsNeeded, reserveAmmo);
-        currentAmmo += bulletsToReload;
-        reserveAmmo -= bulletsToReload;
-
-        UpdateAmmoUI();
-        isReloading = false;
-    }
-
-    void UpdateAmmoUI()
-    {
-        if (ammoText != null)
-            ammoText.text = $"{currentAmmo} / {reserveAmmo}";
-    }
-
-    IEnumerator FadeOutShootingSound(float duration = 0.3f)
-    {
-        isShootingSoundPlaying = false;
-
-        float startVolume = audioSource.volume;
-        float time = 0f;
-
-        while (time < duration)
-        {
-            time += Time.deltaTime;
-            audioSource.volume = Mathf.Lerp(startVolume, 0f, time / duration);
-            yield return null;
-        }
-
-        audioSource.Stop();
-        audioSource.volume = defaultVolume;
-    }
-
-    public void ResetAmmo()
-    {
-        currentAmmo = maxAmmo;
-        reserveAmmo = 90;
-        UpdateAmmoUI();
-    }
-
-    // Helper για την κατάσταση crawl
-    private bool IsPlayerDown()
-    {
-        return health != null && health.GetType().GetField("isDown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(health) is bool b && b;
-    }
-}*/
-
-
-
 using UnityEngine;
 using TMPro;
 using Photon.Pun;
@@ -353,50 +121,95 @@ public class GunScript : MonoBehaviour
         // 5) Ammo Panel
         // ===========================
         PhotonView pv = GetComponent<PhotonView>();
-    if (pv != null && !pv.IsMine)
-        return;
+        if (pv != null && !pv.IsMine)
+            return;
 
-         if (isInsidePanel && Input.GetKeyDown(KeyCode.Z))
-    {
-       double now = PhotonNetwork.Time;
-    if (now >= globalZCooldownEndTime)
-    {
-        reserveAmmo += 90;
-        UpdateAmmoUI();
-        Debug.Log($"💥 Δόθηκαν 90 σφαίρες στον {PhotonNetwork.LocalPlayer.ActorNumber}! Νέο reserveAmmo: {reserveAmmo}");
-
-        // Στέλνουμε RPC σε όλους για να κλείσει το ammoUI και να ξεκινήσει το global cooldown
-        pv.RPC("StartGlobalZCooldownRPC", RpcTarget.All);
-        }
-    }
-    }
-
-    void Shoot()
-    {
-        muzzleFlash.Play();
-        currentAmmo--;
-        UpdateAmmoUI();
-
-        Ray ray = new Ray(fpsCam.transform.position, fpsCam.transform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, range))
+        if (isInsidePanel && Input.GetKeyDown(KeyCode.Z))
         {
-            GameObject hitEffect = Instantiate(hitEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
-            Destroy(hitEffect, 0.5f);
-
-            TargetHealth target = hit.transform.GetComponent<TargetHealth>();
-            PlayerTeam targetTeam = hit.transform.GetComponent<PlayerTeam>();
-
-            if (target != null && targetTeam != null && playerTeam != null)
+            double now = PhotonNetwork.Time;
+            if (now >= globalZCooldownEndTime)
             {
-                if (targetTeam.team != playerTeam.team)
-                {
-                    target.photonView.RPC("TakeDamageRPC", RpcTarget.All, damage);
-                }
+                reserveAmmo += 90;
+                UpdateAmmoUI();
+                Debug.Log($"💥 Δόθηκαν 90 σφαίρες στον {PhotonNetwork.LocalPlayer.ActorNumber}! Νέο reserveAmmo: {reserveAmmo}");
+
+                // Στέλνουμε RPC σε όλους για να κλείσει το ammoUI και να ξεκινήσει το global cooldown
+                pv.RPC("StartGlobalZCooldownRPC", RpcTarget.All);
             }
         }
+    
 
-        Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 1f);
+
+     
     }
+
+  void Shoot()
+{
+    muzzleFlash.Play();
+    currentAmmo--;
+    UpdateAmmoUI();
+
+    Ray ray = new Ray(fpsCam.transform.position, fpsCam.transform.forward);
+    Collider myCollider = GetComponentInParent<Collider>();
+    PhotonView myPV = GetComponentInParent<PhotonView>();
+    int myActor = myPV != null ? myPV.OwnerActorNr : -1;
+    PlayerTeam.Team myTeamEnum = playerTeam != null ? playerTeam.team : PlayerTeam.Team.Red;
+
+    RaycastHit[] hits = Physics.RaycastAll(ray, range);
+
+    if (hits.Length > 0)
+    {
+        // Ταξινόμηση από κοντινότερο προς μακρινότερο
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider == myCollider)
+                continue; // Αγνοούμε τον εαυτό μας
+
+            TargetHealth target = hit.transform.GetComponentInParent<TargetHealth>();
+            PlayerTeam targetTeamComp = hit.transform.GetComponentInParent<PlayerTeam>();
+            PhotonView targetPV = hit.transform.GetComponentInParent<PhotonView>();
+
+            PlayerTeam.Team? targetTeam = targetTeamComp != null ? (PlayerTeam.Team?)targetTeamComp.team : null;
+
+            string hitInfo = $"Hit object: {hit.transform.name}";
+            if (targetPV != null)
+                hitInfo += $" | Actor #{targetPV.OwnerActorNr}";
+            if (targetTeam != null)
+                hitInfo += $" | Team {targetTeam}";
+
+            hitInfo += $" | My Actor #{myActor} | My Team {myTeamEnum}";
+            Debug.Log(hitInfo);
+
+            // Αν υπάρχει TargetHealth και δεν είναι στην ίδια ομάδα, εφαρμόζουμε damage
+            if (target != null && targetTeam != null && targetTeam != myTeamEnum)
+            {
+                targetPV?.RPC("TakeDamageRPC", RpcTarget.All, damage);
+                Debug.Log($"✅ Dealt {damage} damage to {hit.transform.name}");
+            }
+            else if (targetTeam != null && targetTeam == myTeamEnum)
+            {
+                Debug.Log("❌ Friendly fire ignored");
+            }
+
+            break; // Σταματάμε στο πρώτο hit
+        }
+    }
+    else
+    {
+        Debug.Log("❌ Raycast missed everything!");
+    }
+
+    Debug.DrawRay(ray.origin, ray.direction * range, Color.red, 1f);
+}
+
+
+
+
+
+
+
 
     IEnumerator ReloadCoroutine()
     {

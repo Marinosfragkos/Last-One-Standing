@@ -16,18 +16,31 @@ public class BombZone : MonoBehaviourPun
     private readonly HashSet<GameObject> playersInside = new HashSet<GameObject>();
 
     void Start()
+{
+    rend = GetComponent<Renderer>();
+
+    // Ελέγχουμε ποιοι παίκτες είναι ήδη μέσα στην ζώνη
+    Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2);
+    foreach (Collider hit in hits)
     {
-        rend = GetComponent<Renderer>();
-
-        if (audioSource != null && bombSound != null)
+        if (hit.CompareTag("Player"))
         {
-            audioSource.clip = bombSound;
-            audioSource.Play();
+            GameObject playerRoot = hit.transform.root.gameObject;
+            playersInside.Add(playerRoot);
+            Debug.Log($"Player {playerRoot.name} was already inside bomb zone at start!");
         }
-
-        if (rend != null)
-            StartCoroutine(BombRoutine());
     }
+
+    if (audioSource != null && bombSound != null)
+    {
+        audioSource.clip = bombSound;
+        audioSource.Play();
+    }
+
+    if (rend != null)
+        StartCoroutine(BombRoutine());
+}
+
 
     private IEnumerator BombRoutine()
     {

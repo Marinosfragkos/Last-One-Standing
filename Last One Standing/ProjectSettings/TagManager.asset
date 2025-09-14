@@ -8,11 +8,12 @@ TagManager:
   - Interactable
   - Ammo
   - AmmoHealthTrigger
+  - Health
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - 

@@ -3,7 +3,7 @@ using Photon.Pun;
 using System.Collections;
 
 [RequireComponent(typeof(Collider), typeof(PhotonView))]
-public class PlayerAmmo : MonoBehaviour
+public class AidZone : MonoBehaviour
 {
     public string playerTag = "Player"; 
     public GameObject objectToDisable;  
@@ -25,12 +25,12 @@ public class PlayerAmmo : MonoBehaviour
 
     private void Update()
     {
-        if (playerInside && currentPlayer != null && Input.GetKeyDown(KeyCode.Z))
+        if (playerInside && currentPlayer != null && Input.GetKeyDown(KeyCode.X))
         {
             if (pv != null)
             {
                 // Στέλνουμε RPC σε όλους τους παίκτες
-                pv.RPC("DisableObjectRPC", RpcTarget.All, disableTime);
+                pv.RPC("DisableObjectRPC2", RpcTarget.All, disableTime);
             }
         }
     }
@@ -41,13 +41,13 @@ public class PlayerAmmo : MonoBehaviour
         playerInside = true;
         currentPlayer = other.gameObject;
 
-        // Ενημέρωση GunScript αν χρειάζεται
-        GunScript gun = other.GetComponentInParent<GunScript>();
-        PhotonView gunPV = other.GetComponentInParent<PhotonView>();
-        int actor = gunPV != null && gunPV.Owner != null ? gunPV.OwnerActorNr : -1;
+        // Ενημέρωση TargetHealth αν χρειάζεται
+        TargetHealth targetHealth = other.GetComponentInParent<TargetHealth>();
+        PhotonView targetHealthPV = other.GetComponentInParent<PhotonView>();
+        int actor = targetHealthPV != null && targetHealthPV.Owner != null ? targetHealthPV.OwnerActorNr : -1;
 
-        if (gun != null)
-            gun.SetInsidePanel(true, actor);
+        if (targetHealth != null)
+            targetHealth.SetInsidePanel(true, actor);
 
         Debug.Log($"AmmoZone: OnTriggerEnter by {other.name} (Actor {actor})");
     }
@@ -58,19 +58,19 @@ public class PlayerAmmo : MonoBehaviour
         playerInside = false;
         currentPlayer = null;
 
-        // Ενημέρωση GunScript αν χρειάζεται
-        GunScript gun = other.GetComponentInParent<GunScript>();
-        PhotonView gunPV = other.GetComponentInParent<PhotonView>();
-        int actor = gunPV != null && gunPV.Owner != null ? gunPV.OwnerActorNr : -1;
+        // Ενημέρωση TargetHealth αν χρειάζεται
+        TargetHealth targetHealth = other.GetComponentInParent<TargetHealth>();
+        PhotonView targetHealthPV = other.GetComponentInParent<PhotonView>();
+        int actor = targetHealthPV != null && targetHealthPV.Owner != null ? targetHealthPV.OwnerActorNr : -1;
 
-        if (gun != null)
-            gun.SetInsidePanel(false, actor);
+        if (targetHealth != null)
+            targetHealth.SetInsidePanel(false, actor);
 
         Debug.Log($"AmmoZone: OnTriggerExit by {other.name} (Actor {actor})");
     }
 
     [PunRPC]
-    private void DisableObjectRPC(float time)
+    private void DisableObjectRPC2(float time)
     {
         if (objectToDisable != null)
             StartCoroutine(DisableTemporarily(objectToDisable, time));

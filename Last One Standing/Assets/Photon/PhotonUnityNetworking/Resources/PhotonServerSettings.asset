@@ -65,6 +65,10 @@ MonoBehaviour:
   - AddAmmoRPC
   - StartGlobalZCooldownRPC
   - DisableObjectRPC
+  - HideObjectRPC
+  - ShowObjectRPC
+  - DisableObjectRPC2
+  - StartGlobalZCooldownRPC2
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
