@@ -147,7 +147,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blinkInterval: 0.5
   activeTime: 6
-  soundLifeTime: 8
   damage: 30
   bombSound: {fileID: 8300000, guid: 0cb1c809a953e446ba0dd8655eb404b6, type: 3}
   audioSource: {fileID: 4382297082564442146}

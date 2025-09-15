@@ -12,7 +12,7 @@ public class PlayerMovement : MonoBehaviourPun
     public float moveSpeed = 3f;
     private Rigidbody rb;
     private Animator animator;
-    private TargetHealth health;
+    public TargetHealth health;
 
     public AudioSource footstepSource;
     public AudioClip footstepClip;
@@ -32,6 +32,13 @@ public class PlayerMovement : MonoBehaviourPun
     public static bool isSettingsOpen = false;
     public Transform fpsCam;
     private float pitch = 0f;
+    [HideInInspector]
+public int killCount = 0; // αριθμός kills
+public TMP_Text killCountText; // assign στο inspector
+
+    [HideInInspector]
+public bool tookDamageWhileDown = false; // Flag για όταν δέχεται damage ενώ είναι down
+
 
     void Start()
     {
@@ -127,7 +134,7 @@ public class PlayerMovement : MonoBehaviourPun
             animator.SetTrigger("CrawlIdle");
         }
 
-        if (Input.GetKeyDown(KeyCode.V) && !isReviving)
+       if ((!isReviving && Input.GetKeyDown(KeyCode.V)) || (!isReviving && health.currentHealth <= 0 && tookDamageWhileDown))
         {
             isFinalDead = true;
             StartCoroutine(ReviveAfterDeath());

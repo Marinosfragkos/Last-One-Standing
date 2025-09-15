@@ -10,6 +10,7 @@ public class TargetHealth : MonoBehaviourPun
     public float currentHealth;
     public TMP_Text healthText; // νέο πεδίο για την υγεία
 
+
     public Slider healthSlider;
     public Image fillImage;
     public TMP_Text reviveText;
@@ -25,6 +26,9 @@ public class TargetHealth : MonoBehaviourPun
     public float zCooldown = 10f; // δευτερόλεπτα
     public static double globalZCooldownEndTime = 0f; // PhotonNetwork.Time-based
     private bool isInsidePanel = false; // ✅ αν ο παίκτης είναι μέσα στο panel
+    [HideInInspector]
+
+
     
 
 
@@ -89,7 +93,7 @@ public class TargetHealth : MonoBehaviourPun
         if (now >= globalZCooldownEndTime)
         {
             currentHealth = 100;
-            UpdateHealthUI();
+           // UpdateHealthUI();
             Debug.Log($"💥 Υγεία 100 στον {PhotonNetwork.LocalPlayer.ActorNumber}");
 
             photonView.RPC("StartGlobalZCooldownRPC2", RpcTarget.All);
@@ -105,53 +109,63 @@ public class TargetHealth : MonoBehaviourPun
     }
 
     [PunRPC]
-    public void TakeDamageRPC(float amount)
+public void TakeDamageRPC(float amount)
+{
+    if (isDown)
     {
-        if (isDown) return;
-
-        currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
-        UpdateHealthUI();
-
-        if (currentHealth <= 0)
-        {
-            EnterDownState();
-            photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
-        }
-
-        // Ξεκινάει αναγέννηση αν δεν είναι down
-        if (!isDown)
-        {
-            StopCoroutine("RegenerateHealth");
-            StartCoroutine(RegenerateHealth());
-        }
+        // Flag για να ξέρει ο PlayerMovement ότι δέχτηκε damage ενώ ήταν down
+        var pm = GetComponent<PlayerMovement>();
+        if (pm != null)
+            pm.tookDamageWhileDown = true;
     }
+
+    currentHealth -= amount;
+    currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+    // Ενημέρωση UI μόνο αν είναι δικός μου ο παίκτης
+        if (photonView.IsMine)
+            // UpdateHealthUI();
+
+            if (currentHealth <= 0)
+            {
+                EnterDownState();
+                photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
+            }
+
+    if (!isDown)
+    {
+        StopCoroutine("RegenerateHealth");
+        if (photonView.IsMine)
+            StartCoroutine(RegenerateHealth());
+    }
+}
+
 
     public void UpdateHealthUI()
-    {
-        if (photonView == null || !photonView.IsMine) return;
-        if (healthSlider != null)
-            healthSlider.value = currentHealth;
+{
+    if (healthSlider != null)
+        healthSlider.value = currentHealth;
 
-        if (fillImage != null)
-            fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
-        if (healthText != null)
+    if (fillImage != null)
+        fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+
+    if (healthText != null)
         healthText.text = $"{Mathf.RoundToInt(currentHealth)} / {Mathf.RoundToInt(maxHealth)}";
-    }
+}
+
 
     void EnterDownState()
     {
         isDown = true;
         currentHealth = 0f;
-        UpdateHealthUI();
+       // UpdateHealthUI();
     }
 
     [PunRPC]
     void SyncDownStateRPC(bool down)
     {
         isDown = down;
-        UpdateHealthUI();
+       //UpdateHealthUI();
     }
 
     IEnumerator ReviveCountdownCoroutine()
@@ -186,7 +200,7 @@ public class TargetHealth : MonoBehaviourPun
             currentHealth += 2f;
             currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-            UpdateHealthUI();
+            // UpdateHealthUI();
 
             yield return new WaitForSeconds(3f);
         }
@@ -203,7 +217,7 @@ public class TargetHealth : MonoBehaviourPun
     {
         isDown = false;
         currentHealth = fullRevive ? maxHealth : 30f;
-        UpdateHealthUI();
+        //UpdateHealthUI();
 
         // Reset όπλου αν υπάρχει
         GunScript gun = GetComponent<GunScript>();
@@ -289,10 +303,11 @@ private void ApplyLocalDamage(float amount)
 
     currentHealth -= amount;
     currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-    UpdateHealthUI();
+    //UpdateHealthUI(); // εδώ θα πέσει και το slider
 
     if (currentHealth <= 0)
         EnterDownState();
 }
+
 
 }

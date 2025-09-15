@@ -5,10 +5,9 @@ using System.Collections.Generic;
 
 public class BombZone : MonoBehaviourPun
 {
-    public float blinkInterval = 0.5f;   // Αναβοσβήνει κάθε μισό δευτερόλεπτο
-    public float activeTime = 6f;        // Πόσο μένει ενεργή πριν "σκάσει"
-    public float soundLifeTime = 8f;     // Πόσο θα συνεχίσει ο ήχος
-    public float damage = 30f;           // Damage
+    public float blinkInterval = 0.5f;   // Κάθε πόσο αναβοσβήνει
+    public float activeTime = 6f;        // Πόσο μένει πριν σκάσει
+    public float damage = 40f;           // Damage
     public AudioClip bombSound;
     public AudioSource audioSource;
 
@@ -16,32 +15,43 @@ public class BombZone : MonoBehaviourPun
     private readonly HashSet<GameObject> playersInside = new HashSet<GameObject>();
 
     void Start()
-{
-    rend = GetComponent<Renderer>();
-
-    // Ελέγχουμε ποιοι παίκτες είναι ήδη μέσα στην ζώνη
-    Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2);
-    foreach (Collider hit in hits)
     {
-        if (hit.CompareTag("Player"))
+        rend = GetComponent<Renderer>();
+
+        if (rend == null)
         {
-            GameObject playerRoot = hit.transform.root.gameObject;
-            playersInside.Add(playerRoot);
-            Debug.Log($"Player {playerRoot.name} was already inside bomb zone at start!");
+            Debug.LogError("⚠ Bomb has no Renderer!");
         }
-    }
+        else
+        {
+            Debug.Log("✅ Bomb renderer found, starting routine...");
+        }
 
-    if (audioSource != null && bombSound != null)
-    {
-        audioSource.clip = bombSound;
-        audioSource.Play();
-    }
+        // Βλέπουμε ποιοι ήταν ήδη μέσα από την αρχή
+        Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2);
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Player"))
+            {
+                GameObject playerRoot = hit.transform.root.gameObject;
+                playersInside.Add(playerRoot);
+                Debug.Log($"👤 Player {playerRoot.name} already inside bomb zone at start!");
+            }
+        }
 
-    if (rend != null)
+        if (audioSource != null && bombSound != null)
+        {
+            audioSource.clip = bombSound;
+            audioSource.Play();
+        }
+
         StartCoroutine(BombRoutine());
+    }
+[PunRPC]
+private void DeactivateBomb()
+{
+    gameObject.SetActive(false);
 }
-
-
     private IEnumerator BombRoutine()
     {
         float elapsed = 0f;
@@ -49,12 +59,14 @@ public class BombZone : MonoBehaviourPun
         while (elapsed < activeTime)
         {
             elapsed += blinkInterval;
-            rend.enabled = !rend.enabled;
+            if (rend != null) rend.enabled = !rend.enabled;
+            Debug.Log($"⏳ Bomb ticking... elapsed={elapsed:F1}/{activeTime}");
             yield return new WaitForSeconds(blinkInterval);
         }
 
-        // Σκάει
-        rend.enabled = true;
+        // Σκάει η βόμβα
+        if (rend != null) rend.enabled = true;
+        Debug.Log($"💣 Bomb exploding! Players inside: {playersInside.Count}");
 
         if (PhotonNetwork.IsMasterClient)
         {
@@ -62,27 +74,37 @@ public class BombZone : MonoBehaviourPun
             {
                 if (player == null) continue;
 
-                // Παίρνουμε το TargetHealth από το player root
                 TargetHealth th = player.GetComponent<TargetHealth>();
                 if (th != null)
                 {
-                    th.photonView.RPC("TakeDamageRPC", RpcTarget.All, damage);
+                    Debug.Log($"🔥 Damaging {player.name} for {damage} HP");
+                    th.photonView.RPC("TakeDamageRPC", th.photonView.Owner, damage);
+                }
+                else
+                {
+                    Debug.LogWarning($"⚠ No TargetHealth on {player.name}");
                 }
             }
         }
 
+        // Περιμένει λίγο πριν εξαφανιστεί (για να ακουστεί ήχος/εφέ)
+        yield return new WaitForSeconds(1f);
+
         if (PhotonNetwork.IsMasterClient)
-            PhotonNetwork.Destroy(gameObject);
+        {
+            Debug.Log("🗑 Destroying bomb object...");
+            //  PhotonNetwork.Destroy(gameObject);
+          photonView.RPC("DeactivateBomb", RpcTarget.All);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            // Παίρνουμε το root του player
             GameObject playerRoot = other.transform.root.gameObject;
             playersInside.Add(playerRoot);
-            Debug.Log($"Player {playerRoot.name} entered bomb zone!");
+            Debug.Log($"➡ Player {playerRoot.name} entered bomb zone!");
         }
     }
 
@@ -92,7 +114,15 @@ public class BombZone : MonoBehaviourPun
         {
             GameObject playerRoot = other.transform.root.gameObject;
             if (playersInside.Contains(playerRoot))
+            {
                 playersInside.Remove(playerRoot);
+                Debug.Log($"⬅ Player {playerRoot.name} left bomb zone!");
+            }
         }
     }
+
+    //private void OnDestroy()
+   // {
+      //  Debug.LogError("💥 Bomb object destroyed!");
+   // }
 }

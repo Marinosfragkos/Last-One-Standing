@@ -43,12 +43,12 @@ public class BombZoneManager : MonoBehaviourPun
             availablePoints.RemoveAt(randomIndex);
 
             // Περίμενε bombLifeTime και μετά καταστρέψε τη βόμβα
-            yield return new WaitForSeconds(bombLifeTime);
+          //  yield return new WaitForSeconds(bombLifeTime);
 
-            if (bomb != null && bomb.GetComponent<PhotonView>() != null)
-            {
-                PhotonNetwork.Destroy(bomb);
-            }
+           //if (bomb != null && bomb.GetComponent<PhotonView>() != null)
+            //{
+              //  PhotonNetwork.Destroy(bomb);
+           // }
         }
 
         Debug.Log("✅ Όλα τα spawn points χρησιμοποιήθηκαν!");
