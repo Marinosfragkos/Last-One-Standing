@@ -22,10 +22,11 @@ public class TargetHealth : MonoBehaviourPun
     private Vector3 lastPosition;
     private bool isTakingDamage = false;
     public GameObject HealthUI;
-    private bool canUseZ = true; // flag για cooldown
+    //private bool canUseZ = true; // flag για cooldown
     public float zCooldown = 10f; // δευτερόλεπτα
     public static double globalZCooldownEndTime = 0f; // PhotonNetwork.Time-based
     private bool isInsidePanel = false; // ✅ αν ο παίκτης είναι μέσα στο panel
+    
     [HideInInspector]
 
 
@@ -34,6 +35,7 @@ public class TargetHealth : MonoBehaviourPun
 
     void Start()
     {
+       
         currentHealth = maxHealth;
         isDown = false;
 
@@ -70,10 +72,10 @@ public class TargetHealth : MonoBehaviourPun
 
     if (isDown)
     {
-        if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
-        {
-            reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
-        }
+       // if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
+       // {
+          //  reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
+      //  }
 
         if (reviveCoroutine != null && Vector3.Distance(transform.position, lastPosition) > 0.05f)
         {

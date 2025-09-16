@@ -31,7 +31,7 @@ public class PlayerMovement : MonoBehaviourPun
 
     public static bool isSettingsOpen = false;
     public Transform fpsCam;
-    private float pitch = 0f;
+   private float pitch = 0f;
     [HideInInspector]
 public int killCount = 0; // αριθμός kills
 public TMP_Text killCountText; // assign στο inspector
@@ -101,7 +101,7 @@ public bool tookDamageWhileDown = false; // Flag για όταν δέχεται 
 
     private void RotatePlayer()
     {
-          float mouseY = Input.GetAxis("Mouse Y") * 2f;
+          float mouseY = Input.GetAxis("Mouse Y") * 0.5f;
       // Πάνω - Κάτω με clamp
         pitch -= mouseY;
     pitch = Mathf.Clamp(pitch, -45f, 45f); // όριο κλίσης

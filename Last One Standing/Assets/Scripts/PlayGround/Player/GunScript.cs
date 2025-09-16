@@ -29,7 +29,7 @@ public class GunScript : MonoBehaviour
     private TargetHealth health;
     private PlayerTeam playerTeam;
     public GameObject ammoUI;
-    private bool canUseZ = true; // flag για cooldown
+   //private bool canUseZ = true; // flag για cooldown
     public float zCooldown = 10f; // δευτερόλεπτα
     public static double globalZCooldownEndTime = 0f; // PhotonNetwork.Time-based
 
