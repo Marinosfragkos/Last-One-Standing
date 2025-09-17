@@ -185,7 +185,7 @@ public class GunScript : MonoBehaviour
             // Αν υπάρχει TargetHealth και δεν είναι στην ίδια ομάδα, εφαρμόζουμε damage
             if (target != null && targetTeam != null && targetTeam != myTeamEnum)
             {
-                targetPV?.RPC("TakeDamageRPC", RpcTarget.All, damage);
+                targetPV?.RPC("TakeDamageRPC", targetPV.Owner, damage);
                 Debug.Log($"✅ Dealt {damage} damage to {hit.transform.name}");
             }
             else if (targetTeam != null && targetTeam == myTeamEnum)

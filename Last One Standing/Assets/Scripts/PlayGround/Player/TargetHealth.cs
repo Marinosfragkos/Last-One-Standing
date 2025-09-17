@@ -63,31 +63,40 @@ public class TargetHealth : MonoBehaviourPun
     {
         healthText.text = $"HP: {Mathf.RoundToInt(currentHealth)} / {Mathf.RoundToInt(maxHealth)}";
     }
-
-    // 🔹 Test damage μόνο στον local παίκτη με το V
-    if (Input.GetKeyDown(KeyCode.V))
-    {
-        ApplyLocalDamage(10f);
-    }
-
-    if (isDown)
-    {
-       // if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
-       // {
-          //  reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
-      //  }
-
-        if (reviveCoroutine != null && Vector3.Distance(transform.position, lastPosition) > 0.05f)
+        if (photonView.IsMine)
         {
-            StopCoroutine(reviveCoroutine);
-            reviveCoroutine = null;
-            if (reviveText != null)
-                reviveText.gameObject.SetActive(false);
-            Debug.Log("Revive canceled due to movement.");
-        }
+            if (healthSlider != null)
+                healthSlider.value = currentHealth;
 
-        lastPosition = transform.position;
-    }
+            if (fillImage != null)
+                fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+        }
+    // UpdateHealthSlider();
+
+            // 🔹 Test damage μόνο στον local παίκτη με το V
+            /*if (Input.GetKeyDown(KeyCode.V))
+            {
+                ApplyLocalDamage(10f);
+            }*/
+
+            if (isDown)
+            {
+                // if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
+                // {
+                //  reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
+                //  }
+
+                if (reviveCoroutine != null && Vector3.Distance(transform.position, lastPosition) > 0.05f)
+                {
+                    StopCoroutine(reviveCoroutine);
+                    reviveCoroutine = null;
+                    if (reviveText != null)
+                        reviveText.gameObject.SetActive(false);
+                    Debug.Log("Revive canceled due to movement.");
+                }
+
+                lastPosition = transform.position;
+            }
 
     if (isInsidePanel && Input.GetKeyDown(KeyCode.X) && !isDown)
     {
@@ -123,16 +132,24 @@ public void TakeDamageRPC(float amount)
 
     currentHealth -= amount;
     currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        // UpdateHealthSlider();
+        if (photonView.IsMine)
+        {
+            if (healthSlider != null)
+                healthSlider.value = currentHealth;
+
+            if (fillImage != null)
+                fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+        }
 
     // Ενημέρωση UI μόνο αν είναι δικός μου ο παίκτης
-        if (photonView.IsMine)
-            // UpdateHealthUI();
+            if (photonView.IsMine)
 
-            if (currentHealth <= 0)
-            {
-                EnterDownState();
-                photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
-            }
+                if (currentHealth <= 0)
+                {
+                    EnterDownState();
+                    photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
+                }
 
    /* if (!isDown)
     {
@@ -143,7 +160,7 @@ public void TakeDamageRPC(float amount)
 }
 
 
-    public void UpdateHealthUI()
+    /*public void UpdateHealthUI()
 {
     if (healthSlider != null)
         healthSlider.value = currentHealth;
@@ -154,20 +171,20 @@ public void TakeDamageRPC(float amount)
     if (healthText != null)
         healthText.text = $"{Mathf.RoundToInt(currentHealth)} / {Mathf.RoundToInt(maxHealth)}";
 }
-
+*/
 
     void EnterDownState()
     {
         isDown = true;
         currentHealth = 0f;
-       // UpdateHealthUI();
+       
     }
 
     [PunRPC]
     void SyncDownStateRPC(bool down)
     {
         isDown = down;
-       //UpdateHealthUI();
+       
     }
 
     IEnumerator ReviveCountdownCoroutine()
@@ -192,23 +209,32 @@ public void TakeDamageRPC(float amount)
         Revive();
     }
 
-    IEnumerator RegenerateHealth()
-    {
-        yield return new WaitForSeconds(3f);
-        isTakingDamage = false;
+    /* IEnumerator RegenerateHealth()
+     {
+         yield return new WaitForSeconds(3f);
+         isTakingDamage = false;
 
-        while (currentHealth < maxHealth && !isTakingDamage && !isDown)
-        {
-            currentHealth += 2f;
-            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+         while (currentHealth < maxHealth && !isTakingDamage && !isDown)
+         {
+             currentHealth += 2f;
+             currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-            // UpdateHealthUI();
+             // UpdateHealthUI();
 
-            yield return new WaitForSeconds(3f);
-        }
-    }
+             yield return new WaitForSeconds(3f);
+         }
+     }*/
 
     // Wrapper για να καλέσεις την RPC
+    private void UpdateHealthSlider()
+{
+    if (healthSlider != null)
+        healthSlider.value = currentHealth;
+
+    if (fillImage != null)
+        fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+}
+
     public void Revive(bool fullRevive = false)
     {
         photonView.RPC("ReviveRPC", RpcTarget.All, fullRevive);
@@ -220,6 +246,7 @@ public void TakeDamageRPC(float amount)
         isDown = false;
         currentHealth = fullRevive ? maxHealth : 30f;
         //UpdateHealthUI();
+       // UpdateHealthSlider();
 
         // Reset όπλου αν υπάρχει
         GunScript gun = GetComponent<GunScript>();
@@ -299,7 +326,7 @@ private IEnumerator GlobalZUICheck()
     if (isInsidePanel && HealthUI != null)
         HealthUI.SetActive(true);
 }
-private void ApplyLocalDamage(float amount)
+/*private void ApplyLocalDamage(float amount)
 {
     if (isDown) return;
 
@@ -309,7 +336,7 @@ private void ApplyLocalDamage(float amount)
 
     if (currentHealth <= 0)
         EnterDownState();
-}
+}*/
 
 
 }

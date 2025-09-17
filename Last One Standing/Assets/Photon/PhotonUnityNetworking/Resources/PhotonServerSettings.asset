@@ -70,6 +70,7 @@ MonoBehaviour:
   - DisableObjectRPC2
   - StartGlobalZCooldownRPC2
   - DeactivateBomb
+  - AddKill
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
