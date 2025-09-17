@@ -90,7 +90,7 @@ public bool tookDamageWhileDown = false; // Flag για όταν δέχεται 
 
         RotatePlayer();
 
-        if (health != null && health.currentHealth <= 0)
+        if (health != null && health.currentHealth <= 10)
         {
             HandleCrawlMovement();
             return;

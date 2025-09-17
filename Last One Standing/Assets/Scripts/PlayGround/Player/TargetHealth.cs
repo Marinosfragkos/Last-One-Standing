@@ -134,12 +134,12 @@ public void TakeDamageRPC(float amount)
                 photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
             }
 
-    if (!isDown)
+   /* if (!isDown)
     {
         StopCoroutine("RegenerateHealth");
         if (photonView.IsMine)
             StartCoroutine(RegenerateHealth());
-    }
+    }*/
 }
 
 
@@ -229,8 +229,8 @@ public void TakeDamageRPC(float amount)
         }
 
         // Ξεκινάει αναγέννηση υγείας
-        StopCoroutine("RegenerateHealth");
-        StartCoroutine(RegenerateHealth());
+      //  StopCoroutine("RegenerateHealth");
+        //StartCoroutine(RegenerateHealth());
     }
      private void OnTriggerEnter(Collider other)
     {
