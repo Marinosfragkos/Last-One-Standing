@@ -18,18 +18,21 @@ public class SecondLoadingScreen : MonoBehaviourPunCallbacks
     }
 
     IEnumerator FakeLoadingAndLoadScene()
+{
+    float fakeProgress = 0f;
+
+    while (fakeProgress < 1f)
     {
-        float fakeProgress = 0f;
+        fakeProgress += Time.deltaTime / 2f; // αυξάνεται με σταθερό ρυθμό
+        fakeProgress = Mathf.Clamp(fakeProgress, 0f, 1f); // ποτέ πάνω από 1
 
-        while (fakeProgress < 1f)
-        {
-            fakeProgress += Time.deltaTime / 2f; // 2 δευτερόλεπτα fake loading
-            progressBar.value = fakeProgress;
-            progressText.text = $"{(fakeProgress * 100f):F0}%";
-            yield return null;
-        }
-
-        // Όταν τελειώσει, φορτώνουμε με Photon ώστε όλοι να syncάρουν
-        PhotonNetwork.LoadLevel(gameplayScene);
+        progressBar.value = fakeProgress;
+        progressText.text = $"{(fakeProgress * 100f):F0}%";
+        yield return null;
     }
+
+    // Όταν τελειώσει, φορτώνουμε με Photon ώστε όλοι να syncάρουν
+    PhotonNetwork.LoadLevel(gameplayScene);
+}
+
 }

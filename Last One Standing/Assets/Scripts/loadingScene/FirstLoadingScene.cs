@@ -27,7 +27,7 @@ public class FirstLoadingScreen : MonoBehaviour
 
             if (progress >= 1f)
             {
-                yield return new WaitForSeconds(0.5f); // Μικρή καθυστέρηση για smooth effect
+                yield return new WaitForSeconds(2.5f); // Μικρή καθυστέρηση για smooth effect
                 operation.allowSceneActivation = true; // Μετάβαση στην επόμενη σκηνή
             }
 

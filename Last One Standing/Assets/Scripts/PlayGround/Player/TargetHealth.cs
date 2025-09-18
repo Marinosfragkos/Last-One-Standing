@@ -77,7 +77,7 @@ public class TargetHealth : MonoBehaviourPun
     // Ενημέρωση UI κειμένου
     if (healthText != null)
     {
-        healthText.text = $"HP: {Mathf.RoundToInt(currentHealth)} / {Mathf.RoundToInt(maxHealth)}";
+        healthText.text = $"{Mathf.RoundToInt(currentHealth)} / {Mathf.RoundToInt(maxHealth)}";
     }
         if (photonView.IsMine)
         {
