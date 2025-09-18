@@ -60,7 +60,7 @@ private void DeactivateBomb()
         {
             elapsed += blinkInterval;
             if (rend != null) rend.enabled = !rend.enabled;
-            Debug.Log($"⏳ Bomb ticking... elapsed={elapsed:F1}/{activeTime}");
+           // Debug.Log($"⏳ Bomb ticking... elapsed={elapsed:F1}/{activeTime}");
             yield return new WaitForSeconds(blinkInterval);
         }
 

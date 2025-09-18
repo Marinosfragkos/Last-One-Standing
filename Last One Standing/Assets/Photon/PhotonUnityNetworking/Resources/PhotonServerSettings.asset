@@ -71,6 +71,9 @@ MonoBehaviour:
   - StartGlobalZCooldownRPC2
   - DeactivateBomb
   - AddKill
+  - SetDownStateRPC
+  - StartReviveRPC
+  - CloseRevivePanelRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviourPun
     private Rigidbody rb;
     private Animator animator;
     public TargetHealth health;
+    private bool isDown = false; 
 
     public AudioSource footstepSource;
     public AudioClip footstepClip;
@@ -37,7 +38,8 @@ public int killCount = 0; // αριθμός kills
 public TMP_Text killCountText; // assign στο inspector
 
     [HideInInspector]
-public bool tookDamageWhileDown = false; // Flag για όταν δέχεται damage ενώ είναι down
+    public bool tookDamageWhileDown = false; // Flag για όταν δέχεται damage ενώ είναι down
+public GameObject RevivePanel;
 
 
     void Start()
@@ -78,13 +80,20 @@ public bool tookDamageWhileDown = false; // Flag για όταν δέχεται 
 
         if (downedImage != null)
             downedImage.gameObject.SetActive(false);
+        if (RevivePanel != null)
+            RevivePanel.SetActive(false);
     }
+
 
     void Update()
     {
         if (!photonView.IsMine) return;
 
-        if (isFinalDead) StopAllMovementAudio();
+        if (isFinalDead)
+        {
+            StopAllMovementAudio();
+            photonView.RPC("SetDownStateRPC", RpcTarget.AllBuffered, false);
+        }
 
         if (isFinalDead || isSettingsOpen) return;
 
@@ -92,6 +101,7 @@ public bool tookDamageWhileDown = false; // Flag για όταν δέχεται 
 
         if (health != null && health.currentHealth <= 10)
         {
+            photonView.RPC("SetDownStateRPC", RpcTarget.AllBuffered, true);
             HandleCrawlMovement();
             return;
         }
@@ -236,6 +246,15 @@ public bool tookDamageWhileDown = false; // Flag για όταν δέχεται 
 
         isReviving = false;
     }
+    [PunRPC]
+void SetDownStateRPC(bool down)
+{
+    isDown = down;
+
+    if (RevivePanel != null)
+        RevivePanel.SetActive(down);  // όλοι οι παίκτες βλέπουν το panel
+}
+
 
     public bool IsFinalDead() => isFinalDead;
 }

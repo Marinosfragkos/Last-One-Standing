@@ -26,6 +26,11 @@ public class TargetHealth : MonoBehaviourPun
     public float zCooldown = 10f; // δευτερόλεπτα
     public static double globalZCooldownEndTime = 0f; // PhotonNetwork.Time-based
     private bool isInsidePanel = false; // ✅ αν ο παίκτης είναι μέσα στο panel
+    public GameObject RevivePanel; // σύρε το panel από το inspector
+    public RevivePanelTrigger revivePanelTrigger;
+
+    public GameObject indicatorUI; // UI σταυρός
+
     
     [HideInInspector]
 
@@ -79,12 +84,12 @@ public class TargetHealth : MonoBehaviourPun
                 ApplyLocalDamage(10f);
             }*/
 
-            if (isDown)
+           /* if (isDown)
             {
-                // if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
-                // {
-                //  reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
-                //  }
+                 if (Input.GetKeyDown(KeyCode.B) && reviveCoroutine == null)
+                 {
+                  reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine());
+                  }
 
                 if (reviveCoroutine != null && Vector3.Distance(transform.position, lastPosition) > 0.05f)
                 {
@@ -96,7 +101,7 @@ public class TargetHealth : MonoBehaviourPun
                 }
 
                 lastPosition = transform.position;
-            }
+            }*/
 
     if (isInsidePanel && Input.GetKeyDown(KeyCode.X) && !isDown)
     {
@@ -148,7 +153,7 @@ public void TakeDamageRPC(float amount)
                 if (currentHealth <= 0)
                 {
                     EnterDownState();
-                    photonView.RPC("SyncDownStateRPC", RpcTarget.Others, true);
+                    photonView.RPC("SyncDownStateRPC", RpcTarget.All, true);
                 }
 
    /* if (!isDown)
@@ -187,27 +192,7 @@ public void TakeDamageRPC(float amount)
        
     }
 
-    IEnumerator ReviveCountdownCoroutine()
-    {
-        if (reviveText != null)
-            reviveText.gameObject.SetActive(true);
 
-        float countdown = 4f;
-        while (countdown > 0f)
-        {
-            if (reviveText != null)
-                reviveText.text = $"{countdown:F1}s";
-
-            countdown -= Time.deltaTime;
-            yield return null;
-        }
-
-        if (reviveText != null)
-            reviveText.gameObject.SetActive(false);
-
-        reviveCoroutine = null;
-        Revive();
-    }
 
     /* IEnumerator RegenerateHealth()
      {
@@ -227,13 +212,62 @@ public void TakeDamageRPC(float amount)
 
     // Wrapper για να καλέσεις την RPC
     private void UpdateHealthSlider()
-{
-    if (healthSlider != null)
-        healthSlider.value = currentHealth;
+    {
+        if (healthSlider != null)
+            healthSlider.value = currentHealth;
 
-    if (fillImage != null)
-        fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+        if (fillImage != null)
+            fillImage.color = currentHealth <= 10f ? Color.red : Color.green;
+    }
+   public void StartReviveFromOther(GameObject reviver)
+{
+    if (reviveCoroutine == null)
+        reviveCoroutine = StartCoroutine(ReviveCountdownCoroutine(reviver));
 }
+
+   [PunRPC]
+public void StartReviveRPC(int reviverViewID)
+{
+    GameObject reviver = PhotonView.Find(reviverViewID).gameObject;
+    StartReviveFromOther(reviver);
+}
+ public IEnumerator ReviveCountdownCoroutine(GameObject reviver)
+{
+    if (reviveText != null)
+        reviveText.gameObject.SetActive(true);
+
+    float countdown = 4f;
+
+    while (countdown > 0f)
+    {
+        // Τώρα ελέγχουμε σωστά αν ο πραγματικός παίκτης έφυγε
+        if (revivePanelTrigger != null && !revivePanelTrigger.IsPlayerInside(reviver))
+        {
+            Debug.Log("Revive canceled: reviver left the panel.");
+            if (reviveText != null)
+                reviveText.gameObject.SetActive(false);
+            reviveCoroutine = null;
+            yield break;
+        }
+
+        if (reviveText != null)
+            reviveText.text = $"{countdown:F1}";
+
+        countdown -= Time.deltaTime;
+        yield return null;
+    }
+
+    if (reviveText != null)
+        reviveText.gameObject.SetActive(false);
+
+    reviveCoroutine = null;
+    Revive();
+}
+
+
+
+
+
 
     public void Revive(bool fullRevive = false)
     {
@@ -243,6 +277,9 @@ public void TakeDamageRPC(float amount)
     [PunRPC]
     public void ReviveRPC(bool fullRevive)
     {
+        PhotonView pv = GetComponent<PhotonView>();
+        if (pv != null)
+            pv.RPC("CloseRevivePanelRPC", RpcTarget.AllBuffered);
         isDown = false;
         currentHealth = fullRevive ? maxHealth : 30f;
         //UpdateHealthUI();
@@ -326,17 +363,25 @@ private IEnumerator GlobalZUICheck()
     if (isInsidePanel && HealthUI != null)
         HealthUI.SetActive(true);
 }
-/*private void ApplyLocalDamage(float amount)
-{
-    if (isDown) return;
+    /*private void ApplyLocalDamage(float amount)
+    {
+        if (isDown) return;
 
-    currentHealth -= amount;
-    currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-    //UpdateHealthUI(); // εδώ θα πέσει και το slider
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        //UpdateHealthUI(); // εδώ θα πέσει και το slider
 
-    if (currentHealth <= 0)
-        EnterDownState();
-}*/
-
+        if (currentHealth <= 0)
+            EnterDownState();
+    }*/
+    [PunRPC]
+    public void CloseRevivePanelRPC()
+    {
+        if (RevivePanel != null)
+            RevivePanel.SetActive(false);
+        if (indicatorUI != null)
+                indicatorUI.SetActive(false);
+        
+}
 
 }
