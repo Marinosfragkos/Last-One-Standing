@@ -39,25 +39,36 @@ public class TargetHealth : MonoBehaviourPun
 
 
     void Start()
-    {
-       
-        currentHealth = maxHealth;
-        isDown = false;
+{
+    currentHealth = maxHealth;
+    isDown = false;
 
-        if (healthSlider != null)
+    // Αν ΔΕΝ είναι δικός μου ο παίκτης, κρύψε το UI slider του
+    if (!photonView.IsMine && HealthUI != null)
+    {
+        HealthUI.SetActive(false);
+    }
+
+
+        if (photonView.IsMine)
         {
-            healthSlider.maxValue = maxHealth;
-            healthSlider.value = currentHealth;
+            if (healthSlider != null)
+            {
+                healthSlider.gameObject.SetActive(true);
+                healthSlider.maxValue = maxHealth;
+                healthSlider.value = currentHealth;
+            }
+
+            if (fillImage != null)
+                fillImage.color = Color.green;
         }
 
-        if (fillImage != null)
-            fillImage.color = Color.green;
+    if (reviveText != null)
+        reviveText.gameObject.SetActive(false);
 
-        if (reviveText != null)
-            reviveText.gameObject.SetActive(false);
+    lastPosition = transform.position;
+}
 
-        lastPosition = transform.position;
-    }
 
    void Update()
 {

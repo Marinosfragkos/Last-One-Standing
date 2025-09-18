@@ -142,7 +142,7 @@ public class ZoneTrigger : MonoBehaviourPun
     if (movement == null) return;
 
     // ✅ Αποφυγή για τραυματισμένους παίκτες
-    if (movement.health != null && movement.health.currentHealth <= 0)
+    if (movement.health != null && movement.health.currentHealth <= 10)
     {
         Debug.Log($"[ZoneTrigger] Player {movement.photonView.OwnerActorNr} is down, ignoring zone entry.");
         return;
