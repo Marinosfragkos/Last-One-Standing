@@ -222,7 +222,10 @@ public GameObject RevivePanel;
         animator.speed = 0f;
         if (deathCountdownText != null) deathCountdownText.gameObject.SetActive(true);
         if (downedImage != null) downedImage.gameObject.SetActive(true);
-
+foreach (var zone in FindObjectsOfType<ZoneTrigger>())
+{
+    zone.ForceRemovePlayer(photonView.OwnerActorNr);
+}
         float countdown = 5f;
         while (countdown > 0f)
         {

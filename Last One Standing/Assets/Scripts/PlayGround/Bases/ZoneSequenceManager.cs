@@ -46,105 +46,131 @@ public class ZoneSequenceManager : MonoBehaviourPun
         }
     }
 
-    private IEnumerator ActivateZonesSequentially()
+   private IEnumerator ActivateZonesSequentially()
+{
+    for (int i = 0; i < zones.Length; i++)
     {
-        for (int i = 0; i < zones.Length; i++)
+        // Έλεγχος νίκης πριν ενεργοποίηση ζώνης
+        if (blueScore >= 2 || redScore >= 2)
         {
-            // Έλεγχος νίκης
-            if (blueScore >= 2 || redScore >= 2)
+            bool blueWon = blueScore > redScore;
+            photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
+            yield break;
+        }
+
+        ZoneTrigger currentZone = zones[i];
+        if (currentZone == null)
+        {
+            Debug.LogWarning($"Zone at index {i} is null, skipping.");
+            continue;
+        }
+
+        // Countdown 10 δευτ.
+        double startTime = PhotonNetwork.Time;
+        double endTime = startTime + 10f;
+        int lastCountdownValue = -1;
+
+        while (PhotonNetwork.Time < endTime)
+        {
+            float remaining = (float)(endTime - PhotonNetwork.Time);
+            int t = Mathf.CeilToInt(remaining);
+
+            // Μόνο αν άλλαξε το νούμερο
+            if (t != lastCountdownValue)
             {
-                bool blueWon = blueScore > redScore;
-                photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
-                yield break;
-            }
-
-            ZoneTrigger currentZone = zones[i];
-            if (currentZone == null)
-            {
-                Debug.LogWarning($"Zone at index {i} is null, skipping.");
-                continue;
-            }
-
-            // Countdown 10 δευτ. πριν ενεργοποίηση
-            double startTime = PhotonNetwork.Time;
-            double endTime = startTime + 10f;
-
-            while (PhotonNetwork.Time < endTime)
-            {
-                float remaining = (float)(endTime - PhotonNetwork.Time);
-                int t = Mathf.CeilToInt(remaining);
-
-                // Στείλε σε όλους την τρέχουσα αντίστροφη μέτρηση
                 photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, t.ToString());
 
-                // Παίξε ήχο μόνο τοπικά αν θέλεις
                 if (t == 9 && countdownTickSound9 != null)
                     audioSource.PlayOneShot(countdownTickSound9);
                 else if (t == 5 && countdownTickSound5 != null)
                     audioSource.PlayOneShot(countdownTickSound5);
 
-                yield return null;
+                lastCountdownValue = t;
             }
 
-            // Καθαρισμός countdown σε όλους
-            photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, "");
-
-            // Ενεργοποίηση ζώνης
-            currentZone.ResetZone();
-            currentZone.SetActive(true);
-            photonView.RPC("SyncZoneActiveRPC", RpcTarget.Others, i, true);
-
-            // Timer για completion της βάσης
-            float zoneTime = 30f;
-            float timer = 0f;
-
-            while (!currentZone.IsComplete && timer < zoneTime)
-            {
-                timer += Time.deltaTime;
-                float timeLeft = Mathf.Max(zoneTime - timer, 0f);
-
-                int minutes = Mathf.FloorToInt(timeLeft / 60f);
-                int seconds = Mathf.FloorToInt(timeLeft % 60f);
-                photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, string.Format("{0:00}:{1:00}", minutes, seconds));
-
-                yield return null;
-            }
-
-            photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, "");
-
-            // Απονομή πόντου
-            if (currentZone.blueProgress >= 100f)
-                blueScore++;
-            else if (currentZone.redProgress >= 100f)
-                redScore++;
-            else
-            {
-                if (currentZone.blueProgress > currentZone.redProgress)
-                    blueScore++;
-                else if (currentZone.redProgress > currentZone.blueProgress)
-                    redScore++;
-            }
-
-            photonView.RPC("SyncScoreRPC", RpcTarget.All, blueScore, redScore);
-
-            // Έλεγχος νίκης μετά την απονομή
-            if (blueScore >= 2 || redScore >= 2)
-            {
-                bool blueWon = blueScore > redScore;
-                photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
-                yield break;
-            }
-
-            // Απενεργοποίηση ζώνης
-            currentZone.SetActive(false);
-            photonView.RPC("SyncZoneActiveRPC", RpcTarget.Others, i, false);
-
-            if (i + 1 < zones.Length)
-                yield return new WaitForSeconds(10f); // αναμονή πριν την επόμενη ζώνη
+            yield return null;
         }
 
         photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, "");
+
+        // Ενεργοποίηση ζώνης
+        currentZone.ResetZone();
+        currentZone.SetActive(true);
+        photonView.RPC("SyncZoneActiveRPC", RpcTarget.Others, i, true);
+
+        // Timer για ζώνη
+        float zoneTime = 30f;
+        float timer = 0f;
+        int lastZoneCountdownValue = -1;
+
+        while (!currentZone.IsComplete && timer < zoneTime)
+        {
+            timer += Time.deltaTime;
+            float timeLeft = Mathf.Max(zoneTime - timer, 0f);
+
+            int minutes = Mathf.FloorToInt(timeLeft / 60f);
+            int seconds = Mathf.FloorToInt(timeLeft % 60f);
+            int totalSeconds = Mathf.FloorToInt(timeLeft);
+
+            // Στείλε update μόνο όταν αλλάζει το δεύτερο
+            if (totalSeconds != lastZoneCountdownValue)
+            {
+                photonView.RPC("SyncCountdownTextRPC", RpcTarget.All,
+                    string.Format("{0:00}:{1:00}", minutes, seconds));
+
+                lastZoneCountdownValue = totalSeconds;
+            }
+
+            yield return null;
+        }
+
+        photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, "");
+
+        // Απονομή πόντου
+        if (currentZone.blueProgress >= 100f)
+            blueScore++;
+        else if (currentZone.redProgress >= 100f)
+            redScore++;
+        else
+        {
+            if (currentZone.blueProgress > currentZone.redProgress)
+                blueScore++;
+            else if (currentZone.redProgress > currentZone.blueProgress)
+                redScore++;
+        }
+
+        photonView.RPC("SyncScoreRPC", RpcTarget.All, blueScore, redScore);
+
+        // Έλεγχος νίκης μετά την απονομή
+        if (blueScore >= 2 || redScore >= 2)
+        {
+            bool blueWon = blueScore > redScore;
+            photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
+            yield break;
+        }
+
+        // Απενεργοποίηση ζώνης
+        currentZone.SetActive(false);
+        photonView.RPC("SyncZoneActiveRPC", RpcTarget.Others, i, false);
+
+        if (i + 1 < zones.Length)
+            yield return new WaitForSeconds(10f);
     }
+
+    photonView.RPC("SyncCountdownTextRPC", RpcTarget.All, "");
+
+    // === Έλεγχος τελικού σκορ ===
+    if (blueScore == redScore)
+    {
+        photonView.RPC("ShowDrawUI", RpcTarget.All);
+    }
+    else
+    {
+        bool blueWon = blueScore > redScore;
+        photonView.RPC("ShowEndGameUI", RpcTarget.All, blueWon);
+    }
+}
+
     [PunRPC]
     private void SyncCountdownTextRPC(string text)
     {
@@ -168,6 +194,11 @@ public class ZoneSequenceManager : MonoBehaviourPun
     }
 
 
+    [PunRPC]
+    private void ShowDrawUI()
+    {
+        StartCoroutine(DrawEndGameSequence());
+    }
 
     [PunRPC]
     private void ShowEndGameUI(bool blueWon)
@@ -177,26 +208,11 @@ public class ZoneSequenceManager : MonoBehaviourPun
 
     private IEnumerator EndGameSequence(bool blueWon)
     {
-        // Παράλληλα “παγώνουμε” όλους τους παίκτες (disable μόνο τα scripts ελέγχου)
-        GameObject[] players = GameObject.FindGameObjectsWithTag(playerTag);
-        foreach (GameObject p in players)
-        {
-            if (p.TryGetComponent(out PhotonView pv) && pv.IsMine)
-            {
-                // Απενεργοποιούμε μόνο τα scripts του παίκτη
-                var gun = p.GetComponent<GunScript>();
-                if (gun != null) gun.enabled = false;
+        FreezePlayers();
 
-                var movement = p.GetComponent<PlayerMovement>();
-                if (movement != null) movement.enabled = false;
-            }
-        }
-
-        // Απενεργοποίηση extra canvas
         if (extraCanvasToDeactivate != null)
             extraCanvasToDeactivate.SetActive(false);
 
-        // Κοινό canvas για 3 δευτερόλεπτα
         if (commonEndCanvas != null)
             commonEndCanvas.SetActive(true);
 
@@ -204,37 +220,33 @@ public class ZoneSequenceManager : MonoBehaviourPun
 
         if (commonEndCanvas != null)
             commonEndCanvas.SetActive(false);
-         if ((blueScore == 1 && redScore == 1 && drawCanvas != null) || (blueScore == 1 && redScore == 0 && drawCanvas != null) || (blueScore == 0 && redScore == 1 && drawCanvas != null) || (blueScore == 0 && redScore == 0 && drawCanvas != null))
-         {
-             drawCanvas.SetActive(true);
-             yield break; // σταματάμε εδώ, δεν δείχνουμε winning/losing canvas
-         }
-        // Λογική νίκης/ήττας ανα παίκτη
+
         int myTeamInt = (int)PhotonNetwork.LocalPlayer.CustomProperties["Team"];
         PlayerSetup.Team myTeam = (PlayerSetup.Team)myTeamInt;
 
-        if (blueWon)
-        {
-            if (myTeam == PlayerSetup.Team.Blue) // Μπλε ομάδα κέρδισε
-            {
-                if (winningTeamCanvas != null) winningTeamCanvas.SetActive(true);
-            }
-            else // Κόκκινη ομάδα έχασε
-            {
-                if (losingTeamCanvas != null) losingTeamCanvas.SetActive(true);
-            }
-        }
-        else
-        {
-            if (myTeam == PlayerSetup.Team.Red) // Κόκκινη ομάδα κέρδισε
-            {
-                if (winningTeamCanvas != null) winningTeamCanvas.SetActive(true);
-            }
-            else // Μπλε ομάδα έχασε
-            {
-                if (losingTeamCanvas != null) losingTeamCanvas.SetActive(true);
-            }
-        }
+       if (blueWon)
+{
+    if (myTeam == PlayerSetup.Team.Blue) // Μπλε νίκησε → εγώ μπλε
+    {
+        if (winningTeamCanvas != null) winningTeamCanvas.SetActive(true);
+    }
+    else // Είμαι κόκκινος → έχασα
+    {
+        if (losingTeamCanvas != null) losingTeamCanvas.SetActive(true);
+    }
+}
+else
+{
+    if (myTeam == PlayerSetup.Team.Red) // Κόκκινοι νίκησαν → εγώ κόκκινος
+    {
+        if (winningTeamCanvas != null) winningTeamCanvas.SetActive(true);
+    }
+    else // Είμαι μπλε → έχασα
+    {
+        if (losingTeamCanvas != null) losingTeamCanvas.SetActive(true);
+    }
+}
+
     }
     private IEnumerator DelayedStart()
     {
@@ -243,5 +255,39 @@ public class ZoneSequenceManager : MonoBehaviourPun
         // Τώρα ξεκινάει η λογική σου
         StartCoroutine(ActivateZonesSequentially());
     }
+    private IEnumerator DrawEndGameSequence()
+{
+    FreezePlayers();
+
+    if (extraCanvasToDeactivate != null)
+        extraCanvasToDeactivate.SetActive(false);
+
+    if (commonEndCanvas != null)
+        commonEndCanvas.SetActive(true);
+
+    yield return new WaitForSeconds(3f);
+
+    if (commonEndCanvas != null)
+        commonEndCanvas.SetActive(false);
+
+    if (drawCanvas != null)
+        drawCanvas.SetActive(true);
+}
+
+private void FreezePlayers()
+{
+    GameObject[] players = GameObject.FindGameObjectsWithTag(playerTag);
+    foreach (GameObject p in players)
+    {
+        if (p.TryGetComponent(out PhotonView pv) && pv.IsMine)
+        {
+            var gun = p.GetComponent<GunScript>();
+            if (gun != null) gun.enabled = false;
+
+            var movement = p.GetComponent<PlayerMovement>();
+            if (movement != null) movement.enabled = false;
+        }
+    }
+}
 }
 

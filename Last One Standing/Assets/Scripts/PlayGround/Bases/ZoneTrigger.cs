@@ -133,101 +133,101 @@ public class ZoneTrigger : MonoBehaviourPun
         }
     }
 
-   private void OnTriggerEnter(Collider other)
-{
-    if (!isActive || !other.CompareTag("Player")) return;
-
-    var movement = other.GetComponent<PlayerMovement>();
-    if (movement == null) movement = other.GetComponentInParent<PlayerMovement>();
-    if (movement == null) return;
-
-    // ✅ Αποφυγή για τραυματισμένους παίκτες
-    if (movement.health != null && movement.health.currentHealth <= 10)
+    private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[ZoneTrigger] Player {movement.photonView.OwnerActorNr} is down, ignoring zone entry.");
-        return;
-    }
+        if (!isActive || !other.CompareTag("Player")) return;
 
-    var setup = other.GetComponent<PlayerSetup>();
-    if (setup == null) setup = other.GetComponentInParent<PlayerSetup>();
-    if (setup == null) return;
+        var movement = other.GetComponent<PlayerMovement>();
+        if (movement == null) movement = other.GetComponentInParent<PlayerMovement>();
+        if (movement == null) return;
 
-    int actorId = setup.photonView.Owner.ActorNumber;
+        // ✅ Αποφυγή για τραυματισμένους παίκτες
+        if (movement.health != null && movement.health.currentHealth <= 10)
+        {
+            Debug.Log($"[ZoneTrigger] Player {movement.photonView.OwnerActorNr} is down, ignoring zone entry.");
+            return;
+        }
 
-    // Παίρνουμε σωστά την ομάδα του παίκτη από το Photon
-    PlayerSetup.Team team = setup.myTeam;
-    object teamObj;
-    if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
-        team = (PlayerSetup.Team)teamObj;
+        var setup = other.GetComponent<PlayerSetup>();
+        if (setup == null) setup = other.GetComponentInParent<PlayerSetup>();
+        if (setup == null) return;
 
-    Debug.Log($"[ZoneTrigger] Player {actorId} entered zone. Team: {team}");
+        int actorId = setup.photonView.Owner.ActorNumber;
 
-    // Προσθήκη στον σωστό HashSet
-    if (team == PlayerSetup.Team.Blue)
-        bluePlayersInside.Add(actorId);
-    else if (team == PlayerSetup.Team.Red)
-        redPlayersInside.Add(actorId);
+        // Παίρνουμε σωστά την ομάδα του παίκτη από το Photon
+        PlayerSetup.Team team = setup.myTeam;
+        object teamObj;
+        if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
+            team = (PlayerSetup.Team)teamObj;
 
-    // Ανανεώνουμε άμεσα το controlling team
-    UpdateControllingTeam();
-}
+        Debug.Log($"[ZoneTrigger] Player {actorId} entered zone. Team: {team}");
 
+        // Προσθήκη στον σωστό HashSet
+        if (team == PlayerSetup.Team.Blue)
+            bluePlayersInside.Add(actorId);
+        else if (team == PlayerSetup.Team.Red)
+            redPlayersInside.Add(actorId);
 
-private void OnTriggerExit(Collider other)
-{
-    if (!isActive || !other.CompareTag("Player")) return;
-
-    var setup = other.GetComponent<PlayerSetup>();
-    if (setup == null) setup = other.GetComponentInParent<PlayerSetup>();
-    if (setup == null) return;
-
-    int actorId = setup.photonView.Owner.ActorNumber;
-
-    // Παίρνουμε σωστά την ομάδα του παίκτη από το Photon
-    PlayerSetup.Team team = setup.myTeam;
-    object teamObj;
-    if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
-        team = (PlayerSetup.Team)teamObj;
-
-    Debug.Log($"[ZoneTrigger] Player {actorId} exited zone. Team: {team}");
-
-    if (team == PlayerSetup.Team.Blue)
-        bluePlayersInside.Remove(actorId);
-    else if (team == PlayerSetup.Team.Red)
-        redPlayersInside.Remove(actorId);
-
-    // Αν δεν υπάρχει κανείς στη ζώνη, γίνεται neutral
-    if (bluePlayersInside.Count == 0 && redPlayersInside.Count == 0)
-    {
-        lastTeam = "neutral";
-        if (photonView != null)
-            photonView.RPC("UpdateZoneMaterial", RpcTarget.AllBuffered, "neutral");
-    }
-    else
-    {
+        // Ανανεώνουμε άμεσα το controlling team
         UpdateControllingTeam();
     }
-}
 
-// Νέο helper method για να καθορίσει ποιος ελέγχει τη ζώνη
-private void UpdateControllingTeam()
-{
-    string controllingTeam = "neutral";
 
-    if (bluePlayersInside.Count > 0 && redPlayersInside.Count == 0)
-        controllingTeam = "blue";
-    else if (redPlayersInside.Count > 0 && bluePlayersInside.Count == 0)
-        controllingTeam = "red";
-
-    if (controllingTeam != lastTeam)
+    private void OnTriggerExit(Collider other)
     {
-        lastTeam = controllingTeam;
-        if (photonView != null)
-            photonView.RPC("UpdateZoneMaterial", RpcTarget.AllBuffered, controllingTeam);
+        if (!isActive || !other.CompareTag("Player")) return;
+
+        var setup = other.GetComponent<PlayerSetup>();
+        if (setup == null) setup = other.GetComponentInParent<PlayerSetup>();
+        if (setup == null) return;
+
+        int actorId = setup.photonView.Owner.ActorNumber;
+
+        // Παίρνουμε σωστά την ομάδα του παίκτη από το Photon
+        PlayerSetup.Team team = setup.myTeam;
+        object teamObj;
+        if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
+            team = (PlayerSetup.Team)teamObj;
+
+        Debug.Log($"[ZoneTrigger] Player {actorId} exited zone. Team: {team}");
+
+        if (team == PlayerSetup.Team.Blue)
+            bluePlayersInside.Remove(actorId);
+        else if (team == PlayerSetup.Team.Red)
+            redPlayersInside.Remove(actorId);
+
+        // Αν δεν υπάρχει κανείς στη ζώνη, γίνεται neutral
+        if (bluePlayersInside.Count == 0 && redPlayersInside.Count == 0)
+        {
+            lastTeam = "neutral";
+            if (photonView != null)
+                photonView.RPC("UpdateZoneMaterial", RpcTarget.AllBuffered, "neutral");
+        }
+        else
+        {
+            UpdateControllingTeam();
+        }
     }
 
-    Debug.Log($"[ZoneTrigger] Blue inside: {bluePlayersInside.Count}, Red inside: {redPlayersInside.Count}, Controlling: {controllingTeam}");
-}
+    // Νέο helper method για να καθορίσει ποιος ελέγχει τη ζώνη
+    private void UpdateControllingTeam()
+    {
+        string controllingTeam = "neutral";
+
+        if (bluePlayersInside.Count > 0 && redPlayersInside.Count == 0)
+            controllingTeam = "blue";
+        else if (redPlayersInside.Count > 0 && bluePlayersInside.Count == 0)
+            controllingTeam = "red";
+
+        if (controllingTeam != lastTeam)
+        {
+            lastTeam = controllingTeam;
+            if (photonView != null)
+                photonView.RPC("UpdateZoneMaterial", RpcTarget.AllBuffered, controllingTeam);
+        }
+
+        Debug.Log($"[ZoneTrigger] Blue inside: {bluePlayersInside.Count}, Red inside: {redPlayersInside.Count}, Controlling: {controllingTeam}");
+    }
 
     public void ResetZone()
     {
@@ -239,61 +239,61 @@ private void UpdateControllingTeam()
     }
 
     public void SetActive(bool state)
-{
-    isActive = state;
-
-    if (state)
     {
-        UpdateBaseNameUI();
-        EnableCubes();
+        isActive = state;
 
-        // Καθαρίζουμε τυχόν παλιά δεδομένα
-        bluePlayersInside.Clear();
-        redPlayersInside.Clear();
-
-        // Παίρνουμε τον collider της ζώνης
-        Collider col = GetComponent<Collider>();
-        if (col != null)
+        if (state)
         {
-            // Βρίσκουμε όλα τα colliders που είναι ήδη μέσα
-            Collider[] hits = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
-            foreach (Collider hit in hits)
+            UpdateBaseNameUI();
+            EnableCubes();
+
+            // Καθαρίζουμε τυχόν παλιά δεδομένα
+            bluePlayersInside.Clear();
+            redPlayersInside.Clear();
+
+            // Παίρνουμε τον collider της ζώνης
+            Collider col = GetComponent<Collider>();
+            if (col != null)
             {
-                if (hit.CompareTag("Player"))
+                // Βρίσκουμε όλα τα colliders που είναι ήδη μέσα
+                Collider[] hits = Physics.OverlapBox(col.bounds.center, col.bounds.extents, transform.rotation);
+                foreach (Collider hit in hits)
                 {
-                    var setup = hit.GetComponent<PlayerSetup>();
-                    if (setup == null) setup = hit.GetComponentInParent<PlayerSetup>();
-                    if (setup == null) continue;
+                    if (hit.CompareTag("Player"))
+                    {
+                        var setup = hit.GetComponent<PlayerSetup>();
+                        if (setup == null) setup = hit.GetComponentInParent<PlayerSetup>();
+                        if (setup == null) continue;
 
-                    int actorId = setup.photonView.Owner.ActorNumber;
+                        int actorId = setup.photonView.Owner.ActorNumber;
 
-                    // Βρίσκουμε ομάδα από custom properties
-                    PlayerSetup.Team team = setup.myTeam;
-                    object teamObj;
-                    if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
-                        team = (PlayerSetup.Team)teamObj;
+                        // Βρίσκουμε ομάδα από custom properties
+                        PlayerSetup.Team team = setup.myTeam;
+                        object teamObj;
+                        if (setup.photonView.Owner.CustomProperties.TryGetValue("Team", out teamObj))
+                            team = (PlayerSetup.Team)teamObj;
 
-                    if (team == PlayerSetup.Team.Blue)
-                        bluePlayersInside.Add(actorId);
-                    else if (team == PlayerSetup.Team.Red)
-                        redPlayersInside.Add(actorId);
+                        if (team == PlayerSetup.Team.Blue)
+                            bluePlayersInside.Add(actorId);
+                        else if (team == PlayerSetup.Team.Red)
+                            redPlayersInside.Add(actorId);
 
-                    Debug.Log($"[ZoneTrigger] Player {actorId} already inside zone on activation. Team: {team}");
+                        Debug.Log($"[ZoneTrigger] Player {actorId} already inside zone on activation. Team: {team}");
+                    }
                 }
-            }
 
-            // Ενημερώνουμε άμεσα το controlling team
-            UpdateControllingTeam();
+                // Ενημερώνουμε άμεσα το controlling team
+                UpdateControllingTeam();
+            }
+        }
+        else
+        {
+            DisableCubes();
+            bluePlayersInside.Clear();
+            redPlayersInside.Clear();
+            lastTeam = "neutral";
         }
     }
-    else
-    {
-        DisableCubes();
-        bluePlayersInside.Clear();
-        redPlayersInside.Clear();
-        lastTeam = "neutral";
-    }
-}
 
 
     public void EnableCubes()
@@ -307,4 +307,21 @@ private void UpdateControllingTeam()
         foreach (GameObject cube in cubesToChange)
             cube.SetActive(false);
     }
+    public void ForceRemovePlayer(int actorId)
+{
+    if (bluePlayersInside.Contains(actorId))
+    {
+        bluePlayersInside.Remove(actorId);
+        Debug.Log($"[ZoneTrigger] Force removed Blue player {actorId} from zone");
+    }
+
+    if (redPlayersInside.Contains(actorId))
+    {
+        redPlayersInside.Remove(actorId);
+        Debug.Log($"[ZoneTrigger] Force removed Red player {actorId} from zone");
+    }
+
+    UpdateControllingTeam();
+}
+
 }
